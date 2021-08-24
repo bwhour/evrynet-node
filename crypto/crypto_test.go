@@ -30,7 +30,7 @@ import (
 	"github.com/Evrynetlabs/evrynet-node/common/hexutil"
 )
 
-var testAddrHex = "970e8128ab834e8eac17ab8e3812f010678cf791"
+var testAddrStr = "EWvcuLqPT8oMDtuA6uL2aFwiNrT5AhssPd"
 var testPrivHex = "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
 
 // These tests are sanity checks.
@@ -87,7 +87,7 @@ func TestUnmarshalPubkey(t *testing.T) {
 
 func TestSign(t *testing.T) {
 	key, _ := HexToECDSA(testPrivHex)
-	addr := common.HexToAddress(testAddrHex)
+	addr, _ := common.EvryAddressStringToAddressCheck(testAddrStr)
 
 	msg := Keccak256([]byte("foo"))
 	sig, err := Sign(msg, key)
@@ -126,7 +126,7 @@ func TestInvalidSign(t *testing.T) {
 
 func TestNewContractAddress(t *testing.T) {
 	key, _ := HexToECDSA(testPrivHex)
-	addr := common.HexToAddress(testAddrHex)
+	addr, _ := common.EvryAddressStringToAddressCheck(testAddrStr)
 	genAddr := PubkeyToAddress(key.PublicKey)
 	// sanity check before using addr to create contract address
 	checkAddr(t, genAddr, addr)
@@ -134,9 +134,12 @@ func TestNewContractAddress(t *testing.T) {
 	caddr0 := CreateAddress(addr, 0)
 	caddr1 := CreateAddress(addr, 1)
 	caddr2 := CreateAddress(addr, 2)
-	checkAddr(t, common.HexToAddress("333c3310824b7c685133f2bedb2ca4b8b4df633d"), caddr0)
-	checkAddr(t, common.HexToAddress("8bda78331c916a08481428e4b07c96d3e916d165"), caddr1)
-	checkAddr(t, common.HexToAddress("c9ddedf451bc62ce88bf9292afb13df35b670699"), caddr2)
+	addr0, _ := common.EvryAddressStringToAddressCheck("EMpp56kzt1gBkpCCcd2MJufcNKNXYE9XdC")
+	addr1, _ := common.EvryAddressStringToAddressCheck("EVuP8n4NsUrCU834G4sPZhrK8956kWdy4E")
+	addr2, _ := common.EvryAddressStringToAddressCheck("EbZHB5HiBdXNaWT3G1uisTMweezw52NVxk")
+	checkAddr(t, addr0, caddr0)
+	checkAddr(t, addr1, caddr1)
+	checkAddr(t, addr2, caddr2)
 }
 
 func TestLoadECDSAFile(t *testing.T) {
@@ -144,7 +147,8 @@ func TestLoadECDSAFile(t *testing.T) {
 	fileName0 := "test_key0"
 	fileName1 := "test_key1"
 	checkKey := func(k *ecdsa.PrivateKey) {
-		checkAddr(t, PubkeyToAddress(k.PublicKey), common.HexToAddress(testAddrHex))
+		addr, _ := common.EvryAddressStringToAddressCheck(testAddrStr)
+		checkAddr(t, PubkeyToAddress(k.PublicKey), addr)
 		loadedKeyBytes := FromECDSA(k)
 		if !bytes.Equal(loadedKeyBytes, keyBytes) {
 			t.Fatalf("private key mismatch: want: %x have: %x", keyBytes, loadedKeyBytes)

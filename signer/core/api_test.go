@@ -33,7 +33,6 @@ import (
 	"github.com/Evrynetlabs/evrynet-node/common/hexutil"
 	"github.com/Evrynetlabs/evrynet-node/core/types"
 	"github.com/Evrynetlabs/evrynet-node/internal/evrapi"
-	"github.com/Evrynetlabs/evrynet-node/log"
 	"github.com/Evrynetlabs/evrynet-node/rlp"
 	"github.com/Evrynetlabs/evrynet-node/signer/core"
 	"github.com/Evrynetlabs/evrynet-node/signer/fourbyte"
@@ -225,7 +224,8 @@ func TestNewAcc(t *testing.T) {
 }
 
 func mkTestTx(from common.MixedcaseAddress) core.SendTxArgs {
-	to := common.NewMixedcaseAddress(common.HexToAddress("0x1337"))
+	addr, _ := common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmefhTGd9V2")
+	to := common.NewMixedcaseAddress(addr)
 	gas := hexutil.Uint64(21000)
 	gasPrice := (hexutil.Big)(*big.NewInt(2000000000))
 	value := (hexutil.Big)(*big.NewInt(1e18))
@@ -343,7 +343,6 @@ func TestProviderSignTx(t *testing.T) {
 	methodSig := "test(uint)"
 	tx := mkTestTx(a)
 
-	log.Info("===============", tx.From.Address())
 	control.approveCh <- "Y"
 	control.inputCh <- "a_long_password"
 

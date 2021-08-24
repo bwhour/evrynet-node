@@ -243,7 +243,7 @@ func (c *core) SendVote(voteType uint64, block *types.Block, round int64) {
 
 // SendCatchupReply sends catchup reply to target node
 func (c *core) SendCatchupReply(target common.Address, payloads [][]byte) {
-	logger := c.getLogger().With("num_msg", len(payloads), "target", target.Hex())
+	logger := c.getLogger().With("num_msg", len(payloads), "target", target.String())
 	catchUpReplyMsg := &CatchUpReplyMsg{
 		BlockNumber: new(big.Int).Set(c.CurrentState().BlockNumber()),
 		Payloads:    payloads,

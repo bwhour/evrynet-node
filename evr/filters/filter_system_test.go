@@ -226,12 +226,13 @@ func TestPendingTxFilter(t *testing.T) {
 		backend    = &testBackend{mux, db, 0, txFeed, rmLogsFeed, logsFeed, chainFeed}
 		api        = NewPublicFilterAPI(backend, false)
 
+		to, _        = common.EvryAddressStringToAddressCheck("EZtbbeqsuU2vUaTm9r8jHNTqq1vhFcGfmz")
 		transactions = []*types.Transaction{
-			types.NewTransaction(0, common.HexToAddress("0xb794f5ea0ba39494ce83a213fffba74279579268"), new(big.Int), 0, new(big.Int), nil),
-			types.NewTransaction(1, common.HexToAddress("0xb794f5ea0ba39494ce83a213fffba74279579268"), new(big.Int), 0, new(big.Int), nil),
-			types.NewTransaction(2, common.HexToAddress("0xb794f5ea0ba39494ce83a213fffba74279579268"), new(big.Int), 0, new(big.Int), nil),
-			types.NewTransaction(3, common.HexToAddress("0xb794f5ea0ba39494ce83a213fffba74279579268"), new(big.Int), 0, new(big.Int), nil),
-			types.NewTransaction(4, common.HexToAddress("0xb794f5ea0ba39494ce83a213fffba74279579268"), new(big.Int), 0, new(big.Int), nil),
+			types.NewTransaction(0, to, new(big.Int), 0, new(big.Int), nil),
+			types.NewTransaction(1, to, new(big.Int), 0, new(big.Int), nil),
+			types.NewTransaction(2, to, new(big.Int), 0, new(big.Int), nil),
+			types.NewTransaction(3, to, new(big.Int), 0, new(big.Int), nil),
+			types.NewTransaction(4, to, new(big.Int), 0, new(big.Int), nil),
 		}
 
 		hashes []common.Hash
@@ -392,13 +393,14 @@ func TestLogFilter(t *testing.T) {
 		backend    = &testBackend{mux, db, 0, txFeed, rmLogsFeed, logsFeed, chainFeed}
 		api        = NewPublicFilterAPI(backend, false)
 
-		firstAddr      = common.HexToAddress("0x1111111111111111111111111111111111111111")
-		secondAddr     = common.HexToAddress("0x2222222222222222222222222222222222222222")
-		thirdAddress   = common.HexToAddress("0x3333333333333333333333333333333333333333")
-		notUsedAddress = common.HexToAddress("0x9999999999999999999999999999999999999999")
-		firstTopic     = common.HexToHash("0x1111111111111111111111111111111111111111111111111111111111111111")
-		secondTopic    = common.HexToHash("0x2222222222222222222222222222222222222222222222222222222222222222")
-		notUsedTopic   = common.HexToHash("0x9999999999999999999999999999999999999999999999999999999999999999")
+		firstAddr, _      = common.EvryAddressStringToAddressCheck("EJi9Rf88LxzNaQ9LD95fy9U5gM7ve2r8Er")
+		secondAddr, _     = common.EvryAddressStringToAddressCheck("ELGPMjQkFygqAVgocSApw9xCb3jiq1eVqP")
+		thirdAddress, _   = common.EvryAddressStringToAddressCheck("EMpdHohNAzPHkbEH1jFyuASKVkMX63Lm7v")
+		notUsedAddress, _ = common.EvryAddressStringToAddressCheck("EXA4tFR5f4a3HAV7RVnuhDM2wx4J8Rd94T")
+
+		firstTopic   = common.HexToHash("0x1111111111111111111111111111111111111111111111111111111111111111")
+		secondTopic  = common.HexToHash("0x2222222222222222222222222222222222222222222222222222222222222222")
+		notUsedTopic = common.HexToHash("0x9999999999999999999999999999999999999999999999999999999999999999")
 
 		// posted twice, once as vm.Logs and once as core.PendingLogsEvent
 		allLogs = []*types.Log{
@@ -511,15 +513,16 @@ func TestPendingLogsSubscription(t *testing.T) {
 		backend    = &testBackend{mux, db, 0, txFeed, rmLogsFeed, logsFeed, chainFeed}
 		api        = NewPublicFilterAPI(backend, false)
 
-		firstAddr      = common.HexToAddress("0x1111111111111111111111111111111111111111")
-		secondAddr     = common.HexToAddress("0x2222222222222222222222222222222222222222")
-		thirdAddress   = common.HexToAddress("0x3333333333333333333333333333333333333333")
-		notUsedAddress = common.HexToAddress("0x9999999999999999999999999999999999999999")
-		firstTopic     = common.HexToHash("0x1111111111111111111111111111111111111111111111111111111111111111")
-		secondTopic    = common.HexToHash("0x2222222222222222222222222222222222222222222222222222222222222222")
-		thirdTopic     = common.HexToHash("0x3333333333333333333333333333333333333333333333333333333333333333")
-		fourthTopic    = common.HexToHash("0x4444444444444444444444444444444444444444444444444444444444444444")
-		notUsedTopic   = common.HexToHash("0x9999999999999999999999999999999999999999999999999999999999999999")
+		firstAddr, _      = common.EvryAddressStringToAddressCheck("EJi9Rf88LxzNaQ9LD95fy9U5gM7ve2r8Er")
+		secondAddr, _     = common.EvryAddressStringToAddressCheck("ELGPMjQkFygqAVgocSApw9xCb3jiq1eVqP")
+		thirdAddress, _   = common.EvryAddressStringToAddressCheck("EMpdHohNAzPHkbEH1jFyuASKVkMX63Lm7v")
+		notUsedAddress, _ = common.EvryAddressStringToAddressCheck("EXA4tFR5f4a3HAV7RVnuhDM2wx4J8Rd94T")
+
+		firstTopic   = common.HexToHash("0x1111111111111111111111111111111111111111111111111111111111111111")
+		secondTopic  = common.HexToHash("0x2222222222222222222222222222222222222222222222222222222222222222")
+		thirdTopic   = common.HexToHash("0x3333333333333333333333333333333333333333333333333333333333333333")
+		fourthTopic  = common.HexToHash("0x4444444444444444444444444444444444444444444444444444444444444444")
+		notUsedTopic = common.HexToHash("0x9999999999999999999999999999999999999999999999999999999999999999")
 
 		allLogs = []core.PendingLogsEvent{
 			{Logs: []*types.Log{{Address: firstAddr, Topics: []common.Hash{}, BlockNumber: 0}}},

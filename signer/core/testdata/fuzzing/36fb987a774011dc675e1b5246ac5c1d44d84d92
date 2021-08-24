@@ -38,13 +38,13 @@
     "name": "Lorem",
     "version": "1",
     "chainId": "1",
-    "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+    "verifyingContract": "EbpngUGwQ6fR3T7XdP4NbEoPg3ugbofgeN"
   },
   "message": {
     "addys": [
-      "0x0000000000000000000000000000000000000001",
-      "0x0000000000000000000000000000000000000002",
-      "0x0000000000000000000000000000000000000003"
+      "EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ",
+      "EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK",
+      "EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN"
     ],
     "stringies": [
       "lorem",

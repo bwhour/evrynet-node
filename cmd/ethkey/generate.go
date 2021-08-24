@@ -19,6 +19,7 @@ package main
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/Evrynetlabs/evrynet-node/common"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -106,7 +107,7 @@ If you want to encrypt an existing private key, it can be specified by setting
 
 		// Output some information.
 		out := outputGenerate{
-			Address: key.Address.Hex(),
+			Address: common.AddressToEvryAddressString(key.Address),
 		}
 		if ctx.Bool(jsonFlag.Name) {
 			mustPrintJSON(out)

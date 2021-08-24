@@ -77,7 +77,7 @@ func odrGetReceipts(ctx context.Context, db evrdb.Database, config *params.Chain
 func TestOdrAccountsLes2(t *testing.T) { testOdr(t, 2, 1, true, odrAccounts) }
 
 func odrAccounts(ctx context.Context, db evrdb.Database, config *params.ChainConfig, bc *core.BlockChain, lc *light.LightChain, bhash common.Hash) []byte {
-	dummyAddr := common.HexToAddress("1234567812345678123456781234567812345678")
+	dummyAddr, _ := common.EvryAddressStringToAddressCheck("EJpAMXeGR3CEaEP2e53tn28cUDZTZxFW3z")
 	acc := []common.Address{testBankAddress, acc1Addr, acc2Addr, dummyAddr}
 
 	var (

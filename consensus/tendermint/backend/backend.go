@@ -33,6 +33,7 @@ const (
 	initialBroadcastSleepTime    = time.Millisecond * 100
 	broadcastSleepTimeIncreament = time.Millisecond * 100
 	inMemoryValset               = 10
+	inMemoryProposer             = 100
 )
 
 var (
@@ -47,18 +48,20 @@ type Option func(b *Backend) error
 // The p2p communication, i.e, broadcaster is set separately by calling backend.SetBroadcaster
 func New(config *tendermint.Config, privateKey *ecdsa.PrivateKey, opts ...Option) consensus.Tendermint {
 	valSetCache, _ := lru.NewARC(inMemoryValset)
+	proposerCache, _ := lru.NewARC(inMemoryProposer)
 	be := &Backend{
-		config:               config,
-		tendermintEventMux:   new(event.TypeMux),
-		privateKey:           privateKey,
-		address:              crypto.PubkeyToAddress(privateKey.PublicKey),
-		commitChs:            newCommitChannels(),
-		mutex:                &sync.RWMutex{},
-		storingMsgs:          queue.NewFIFO(),
-		dequeueMsgTriggering: make(chan struct{}, maxTrigger),
-		broadcastCh:          make(chan broadcastTask),
-		controlChan:          make(chan struct{}),
-		computedValSetCache:  valSetCache,
+		config:                     config,
+		tendermintEventMux:         new(event.TypeMux),
+		privateKey:                 privateKey,
+		address:                    crypto.PubkeyToAddress(privateKey.PublicKey),
+		commitChs:                  newCommitChannels(),
+		mutex:                      &sync.RWMutex{},
+		storingMsgs:                queue.NewFIFO(),
+		dequeueMsgTriggering:       make(chan struct{}, maxTrigger),
+		closingBackgroundThreadsCh: make(chan struct{}),
+		controlChan:                make(chan struct{}),
+		computedValSetCache:        valSetCache,
+		blockProposerCache:         proposerCache,
 	}
 
 	if config.FixedValidators != nil && len(config.FixedValidators) > 0 {
@@ -101,10 +104,11 @@ type Backend struct {
 	//it is a map of blocknumber- channels with mutex
 	commitChs *commitChannels
 
-	coreStarted bool
-	mutex       *sync.RWMutex
-	chain       consensus.FullChainReader
-	controlChan chan struct{}
+	coreStarted                bool
+	mutex                      *sync.RWMutex
+	chain                      consensus.FullChainReader
+	controlChan                chan struct{}
+	closingBackgroundThreadsCh chan struct{}
 
 	//storingMsgs is used to store msg to handler when core stopped
 	storingMsgs          *queue.FIFO
@@ -114,11 +118,11 @@ type Backend struct {
 	//verifyAndSubmitBlock to send the proposal block to miner
 	verifyAndSubmitBlock func(*types.Block) error
 
-	broadcastCh chan broadcastTask
-
 	valSetInfo          ValidatorSetInfo
 	stakingContractAddr common.Address // stakingContractAddr stores the address of staking smart-contract
 	computedValSetCache *lru.ARCCache  // computedValSetCache stores the valset is computed from stateDB
+
+	blockProposerCache *lru.ARCCache // blockProposerCache stores the address of proposal block
 }
 
 // EventMux implements tendermint.Backend.EventMux

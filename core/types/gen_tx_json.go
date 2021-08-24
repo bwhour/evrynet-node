@@ -22,14 +22,15 @@ func (t txdata) MarshalJSON() ([]byte, error) {
 		Recipient    *common.Address `json:"to"       rlp:"nil"`
 		Amount       *hexutil.Big    `json:"value"    gencodec:"required"`
 		Payload      hexutil.Bytes   `json:"input"    gencodec:"required"`
+		Owner        *common.Address `json:"owner" rlp:"nil"`
+		Provider     *common.Address `json:"provider" rlp:"nil"`
+		Extra        hexutil.Bytes   `json:"extraData" rlp:"nil"`
 		V            *hexutil.Big    `json:"v" gencodec:"required"`
 		R            *hexutil.Big    `json:"r" gencodec:"required"`
 		S            *hexutil.Big    `json:"s" gencodec:"required"`
-		PV           *hexutil.Big    `json:"pv"`
-		PR           *hexutil.Big    `json:"pr"`
-		PS           *hexutil.Big    `json:"ps"`
-		Owner        *common.Address `json:"owner" rlp:"nil"`
-		Provider     *common.Address `json:"provider" rlp:"nil"`
+		PV           *hexutil.Big    `json:"pv"       rlp:"nil"`
+		PR           *hexutil.Big    `json:"pr"       rlp:"nil"`
+		PS           *hexutil.Big    `json:"ps"       rlp:"nil"`
 		Hash         *common.Hash    `json:"hash" rlp:"-"`
 	}
 	var enc txdata
@@ -39,6 +40,9 @@ func (t txdata) MarshalJSON() ([]byte, error) {
 	enc.Recipient = t.Recipient
 	enc.Amount = (*hexutil.Big)(t.Amount)
 	enc.Payload = t.Payload
+	enc.Owner = t.Owner
+	enc.Provider = t.Provider
+	enc.Extra = t.Extra
 	enc.V = (*hexutil.Big)(t.V)
 	enc.R = (*hexutil.Big)(t.R)
 	enc.S = (*hexutil.Big)(t.S)
@@ -46,8 +50,6 @@ func (t txdata) MarshalJSON() ([]byte, error) {
 	enc.PR = (*hexutil.Big)(t.PR)
 	enc.PS = (*hexutil.Big)(t.PS)
 	enc.Hash = t.Hash
-	enc.Provider = t.Provider
-	enc.Owner = t.Owner
 	return json.Marshal(&enc)
 }
 
@@ -60,14 +62,15 @@ func (t *txdata) UnmarshalJSON(input []byte) error {
 		Recipient    *common.Address `json:"to"       rlp:"nil"`
 		Amount       *hexutil.Big    `json:"value"    gencodec:"required"`
 		Payload      *hexutil.Bytes  `json:"input"    gencodec:"required"`
+		Owner        *common.Address `json:"owner" rlp:"nil"`
+		Provider     *common.Address `json:"provider" rlp:"nil"`
+		Extra        *hexutil.Bytes  `json:"extraData" rlp:"nil"`
 		V            *hexutil.Big    `json:"v" gencodec:"required"`
 		R            *hexutil.Big    `json:"r" gencodec:"required"`
 		S            *hexutil.Big    `json:"s" gencodec:"required"`
-		PV           *hexutil.Big    `json:"pv"`
-		PR           *hexutil.Big    `json:"pr"`
-		PS           *hexutil.Big    `json:"ps"`
-		Owner        *common.Address `json:"owner" rlp:"nil"`
-		Provider     *common.Address `json:"provider" rlp:"nil"`
+		PV           *hexutil.Big    `json:"pv"       rlp:"nil"`
+		PR           *hexutil.Big    `json:"pr"       rlp:"nil"`
+		PS           *hexutil.Big    `json:"ps"       rlp:"nil"`
 		Hash         *common.Hash    `json:"hash" rlp:"-"`
 	}
 	var dec txdata
@@ -97,6 +100,15 @@ func (t *txdata) UnmarshalJSON(input []byte) error {
 		return errors.New("missing required field 'input' for txdata")
 	}
 	t.Payload = *dec.Payload
+	if dec.Owner != nil {
+		t.Owner = dec.Owner
+	}
+	if dec.Provider != nil {
+		t.Provider = dec.Provider
+	}
+	if dec.Extra != nil {
+		t.Extra = *dec.Extra
+	}
 	if dec.V == nil {
 		return errors.New("missing required field 'v' for txdata")
 	}
@@ -109,15 +121,17 @@ func (t *txdata) UnmarshalJSON(input []byte) error {
 		return errors.New("missing required field 's' for txdata")
 	}
 	t.S = (*big.Int)(dec.S)
+	if dec.PV != nil {
+		t.PV = (*big.Int)(dec.PV)
+	}
+	if dec.PR != nil {
+		t.PR = (*big.Int)(dec.PR)
+	}
+	if dec.PS != nil {
+		t.PS = (*big.Int)(dec.PS)
+	}
 	if dec.Hash != nil {
 		t.Hash = dec.Hash
 	}
-
-	t.PV = (*big.Int)(dec.PV)
-	t.PR = (*big.Int)(dec.PR)
-	t.PS = (*big.Int)(dec.PS)
-
-	t.Provider = dec.Provider
-	t.Owner = dec.Owner
 	return nil
 }

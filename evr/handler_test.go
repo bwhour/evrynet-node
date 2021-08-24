@@ -701,8 +701,8 @@ func TestFindPeers(t *testing.T) {
 	defer peer.close()
 
 	targets := map[common.Address]bool{}
-	address1 := testBank                                                          // this address is in Peer list
-	address2 := common.HexToAddress("0x3Cf628d49Ae46b49b210F0521Fbd9F82B461A9E1") // a random address that should not be in Peers list
+	address1 := testBank                                                                        // this address is in Peer list
+	address2, _ := common.EvryAddressStringToAddressCheck("ENiEvZB2NpjRGHL3gCVFQGAvHAqvQQx5wc") // a random address that should not be in Peers list
 	targets[address1] = true
 	targets[address2] = true
 

@@ -29,7 +29,6 @@ import (
 	"github.com/Evrynetlabs/evrynet-node/common/prque"
 	"github.com/Evrynetlabs/evrynet-node/core/state"
 	"github.com/Evrynetlabs/evrynet-node/core/types"
-	"github.com/Evrynetlabs/evrynet-node/crypto"
 	"github.com/Evrynetlabs/evrynet-node/event"
 	"github.com/Evrynetlabs/evrynet-node/log"
 	"github.com/Evrynetlabs/evrynet-node/metrics"
@@ -42,18 +41,18 @@ const (
 )
 
 var (
-	// ErrOwnerReqired is returned if the transaction to create contract with a provider but not contains an owner.
-	ErrOwnerReqired = errors.New("owner is required")
-
 	// ErrInvalidSender is returned if the transaction contains an invalid signature.
 	ErrInvalidSender = errors.New("invalid sender")
 
 	// ErrInvalidProvider is returned if the transaction contains an invalid signature.
 	ErrInvalidProvider = errors.New("invalid provider")
 
-	// ErrRedundantProvider is returned if the transaction does not require provider to sign
+	// ErrProviderSignatureIsRequired is returned if the transaction to enterprise contract does not contain a provider signature.
+	ErrProviderSignatureIsRequired = errors.New("missing provider 's signature")
+
+	// ErrRedundantProviderSignature is returned if the transaction does not require provider to sign
 	// but still contains a provider's signature
-	ErrRedundantProvider = errors.New("redundant provider's signature")
+	ErrRedundantProviderSignature = errors.New("redundant provider's signature")
 
 	// ErrNonceTooLow is returned if the nonce of a transaction is lower than the
 	// one present in the local chain.
@@ -95,7 +94,6 @@ var (
 	// than some meaningful limit a user might use. This is not a consensus error
 	// making the transaction invalid, rather a DOS protection.
 	ErrOversizedData = errors.New("oversized data")
-	emptyCodeHash    = crypto.Keccak256Hash(nil)
 
 	// ErrOversizedData is returned if new tx has the same nonce with an old one
 	ErrSameNonce = errors.New("Transaction same nonce")
@@ -106,8 +104,11 @@ var (
 	// ErrInvalidGasPrice is returned if tx gasPrice is different from gasPrice of the network
 	ErrInvalidGasPrice = errors.New("Tx gasPrice is different from gasPrice of the network")
 
-	// ErrMaxProvider will be returned if the providers are over the limit
-	ErrMaxProvider = errors.New("maximum provider in contract")
+	// ErrOnlyOwner is returned if modifying providers transaction is not from owner of enterprise contract
+	ErrOnlyOwner = errors.New("only owner can modify providers of enterprise contract")
+
+	// ErrInvalidAddressToModifyProviders is returned when modifying providers transaction is sent to non-enterprise contract
+	ErrInvalidAddressToModifyProviders = errors.New("only enterprise contract can modify providers")
 )
 
 var (
@@ -652,55 +653,48 @@ func (pool *TxPool) ValidateTx(tx *types.Transaction, local bool) error {
 		return ErrGasLimit
 	}
 	// Make sure the transaction is signed properly
-	from, err := types.Sender(pool.signer, tx)
+	txMsg, err := tx.AsMessage(pool.signer)
 	if err != nil {
-		return ErrInvalidSender
+		return err
 	}
+	from := txMsg.From()
 
-	//Vlidate gasPrice of tx must be as the same as gasPrice of chainConfig
+	//Validate gasPrice of tx must be as the same as gasPrice of chainConfig
 	if tx.GasPrice().Cmp(pool.chainconfig.GasPrice) != 0 {
 		return ErrInvalidGasPrice
 	}
 
-	// If the destination is an enterprise smart contract, the tx must be signed with valid provider
-	// Otherwise, it should not have any provider's signature
-	// TODO: remove the log in production
-	signedProvider, providerRetrieveErr := types.Provider(pool.signer, tx)
-	var isEnterpriseContract = false
-	if tx.To() != nil {
-		to := tx.To()
-		contractHash := pool.currentState.GetCodeHash(*to)
-		if (contractHash != common.Hash{}) && (contractHash != emptyCodeHash) {
-			expectedProviders := pool.currentState.GetProviders(*to)
-			if len(expectedProviders) > 0 {
-				isEnterpriseContract = true
-				if providerRetrieveErr != nil {
-					log.Error("invalid provider address", "error", providerRetrieveErr)
-					return ErrInvalidProvider
-				}
-				if signedProvider == nil {
-					log.Error("invalid provider address", "provider address is nil")
-					return ErrInvalidProvider
-				}
-				if !signedProvider.InList(expectedProviders) {
-					log.Error("invalid provider address", "provider address", signedProvider.String())
-					return ErrInvalidProvider
-				}
-			}
+	// Check permission to execute transaction to enterprise contract
+	switch {
+	case txMsg.To() == nil: // nothing need to check
+	case txMsg.TxType() == types.AddProviderTxType || txMsg.TxType() == types.RemoveProviderTxType:
+		owner := pool.currentState.GetOwner(*txMsg.To())
+		// if this is not an enterprise contract, return error
+		if owner == nil {
+			return ErrInvalidAddressToModifyProviders
 		}
-	} else {
-		emptyAddress := common.Address{}
-		if tx.Provider() != nil && tx.Provider().Hex() != emptyAddress.Hex() {
-			if tx.Owner() == nil || (tx.Owner() != nil && tx.Owner().Hex() == emptyAddress.Hex()) {
-				log.Error("owner address is required")
-				return ErrOwnerReqired
+		if *owner != txMsg.From() {
+			return ErrOnlyOwner
+		}
+	default:
+		owner := pool.currentState.GetOwner(*txMsg.To())
+		// if this is not an enterprise contract, there must be no provider signature
+		if owner == nil {
+			if txMsg.HasProviderSignature() {
+				return ErrRedundantProviderSignature
 			}
+			break
+		}
+		// If the destination is an enterprise smart contract, the tx must be signed with valid provider
+		if !txMsg.HasProviderSignature() {
+			return ErrProviderSignatureIsRequired
+		}
+		expectedProviders := pool.currentState.GetProviders(*txMsg.To())
+		if !tx.GasPayer(pool.signer).InList(expectedProviders) {
+			return ErrInvalidProvider
 		}
 	}
-	if (signedProvider != nil) && (!isEnterpriseContract) {
-		// this case happens when there is no provider address required but still have provider's signature
-		return ErrRedundantProvider
-	}
+
 	// Drop non-local transactions under our own minimal accepted gas price
 	local = local || pool.locals.contains(from) // account may be local even if the transaction arrived from the network
 	if !local && pool.gasPrice.Cmp(tx.GasPrice()) > 0 {
@@ -711,7 +705,7 @@ func (pool *TxPool) ValidateTx(tx *types.Transaction, local bool) error {
 		return ErrNonceTooLow
 	}
 	// Transactor should have enough funds to cover the costs
-	if signedProvider != nil {
+	if txMsg.HasProviderSignature() {
 		// Provider's cost == GP * GL
 		// Sender's cost == V
 
@@ -721,12 +715,13 @@ func (pool *TxPool) ValidateTx(tx *types.Transaction, local bool) error {
 		}
 
 		// Check provider's balance for transaction fee
-		if pool.currentState.GetBalance(*signedProvider).Cmp(tx.TransactionFee()) < 0 {
+		if pool.currentState.GetBalance(txMsg.GasPayer()).Cmp(tx.TransactionFee()) < 0 {
 			return ErrProviderInsufficientFunds
 		}
 	} else {
 		// Sender pays transaction fee, check sender's balance for tx costs
 		// cost == V + GP * GL
+
 		if pool.currentState.GetBalance(from).Cmp(tx.Cost()) < 0 {
 			return ErrInsufficientFunds
 		}

@@ -295,11 +295,15 @@ func (w *wizard) readAddress() *common.Address {
 			return nil
 		}
 		// Make sure it looks ok and return it if so
-		if len(text) != 42 && len(text) != 40 {
+		if len(text) != 34 {
 			log.Error("Invalid address length, please retry")
 			continue
 		}
-		address := common.HexToAddress(text)
+		address, err := common.EvryAddressStringToAddressCheck(text)
+		if err != nil{
+			log.Error(err.Error())
+			continue
+		}
 		return &address
 	}
 }
@@ -319,11 +323,16 @@ func (w *wizard) readDefaultAddress(def common.Address) common.Address {
 			return def
 		}
 		// Make sure it looks ok and return it if so
-		if len(text) != 42 && len(text) != 40 {
+		if len(text) != 34 {
 			log.Error("Invalid address length, please retry")
 			continue
 		}
-		return common.HexToAddress(text)
+		address, err := common.EvryAddressStringToAddressCheck(text)
+		if err != nil{
+			log.Error(err.Error())
+			continue
+		}
+		return address
 	}
 }
 

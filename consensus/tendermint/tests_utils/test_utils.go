@@ -153,7 +153,8 @@ func makeHeaderFromParent(parent *types.Block) *types.Header {
 }
 
 func GetAddress() common.Address {
-	return common.HexToAddress("0x70524d664ffe731100208a0154e556f9bb679ae6")
+	addr, _ := common.EvryAddressStringToAddressCheck("ETPomY44tjk5aaQVhVSeT5WBkq6n3QbRLr")
+	return addr
 }
 
 func GeneratePrivateKey() (*ecdsa.PrivateKey, error) {

@@ -58,6 +58,11 @@ func (s *senderFromServer) Provider(tx *types.Transaction) (common.Address, erro
 func (s *senderFromServer) Hash(tx *types.Transaction) common.Hash {
 	panic("can't sign with senderFromServer")
 }
+
+func (s *senderFromServer) HashWithSender(tx *types.Transaction) (common.Hash, error) {
+	panic("can't sign with senderFromServer")
+}
+
 func (s *senderFromServer) SignatureValues(tx *types.Transaction, sig []byte) (R, S, V *big.Int, err error) {
 	panic("can't sign with senderFromServer")
 }

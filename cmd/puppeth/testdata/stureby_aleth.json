@@ -25,14 +25,14 @@
     "nonce":"0x0000000000000000",
     "difficulty":"0x20000",
     "mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000",
-    "author":"0x0000000000000000000000000000000000000000",
+    "author":"EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",
     "timestamp":"0x59a4e76d",
     "parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000",
     "extraData":"0x0000000000000000000000000000000000000000000000000000000b4dc0ffee",
     "gasLimit":"0x47b760"
   },
   "accounts":{
-    "0000000000000000000000000000000000000001":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ":{
       "balance":"1",
       "precompiled":{
         "name":"ecrecover",
@@ -42,7 +42,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000002":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK":{
       "balance":"1",
       "precompiled":{
         "name":"sha256",
@@ -52,7 +52,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000003":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN":{
       "balance":"1",
       "precompiled":{
         "name":"ripemd160",
@@ -62,7 +62,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000004":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8vQxDxk":{
       "balance":"1",
       "precompiled":{
         "name":"identity",
@@ -72,14 +72,14 @@
         }
       }
     },
-    "0000000000000000000000000000000000000005":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW94KW4wg":{
       "balance":"1",
       "precompiled":{
         "name":"modexp",
         "startingBlock":"0x7530"
       }
     },
-    "0000000000000000000000000000000000000006":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9DoUTe1":{
       "balance":"1",
       "precompiled":{
         "name":"alt_bn128_G1_add",
@@ -90,7 +90,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000007":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9KMUV2x":{
       "balance":"1",
       "precompiled":{
         "name":"alt_bn128_G1_mul",
@@ -101,7 +101,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000008":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9NBqmcb":{
       "balance":"1",
       "precompiled":{
         "name":"alt_bn128_pairing_product",

@@ -336,10 +336,12 @@ var bn256PairingTests = []precompiledTest{
 	},
 }
 
-func testPrecompiled(addr string, test precompiledTest, t *testing.T) {
-	p := PrecompiledContractsByzantium[common.HexToAddress(addr)]
+func testPrecompiled(addrStr string, test precompiledTest, t *testing.T) {
+	addr, _ := common.EvryAddressStringToAddressCheck(addrStr)
+	p := PrecompiledContractsByzantium[addr]
 	in := common.Hex2Bytes(test.input)
-	contract := NewContract(AccountRef(common.HexToAddress("1337")),
+	contractAddr, _ := common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmefphuFF6s")
+	contract := NewContract(AccountRef(contractAddr),
 		nil, new(big.Int), p.RequiredGas(in))
 	t.Run(fmt.Sprintf("%s-Gas=%d", test.name, contract.Gas), func(t *testing.T) {
 		if res, err := RunPrecompiledContract(p, in, contract); err != nil {
@@ -350,14 +352,16 @@ func testPrecompiled(addr string, test precompiledTest, t *testing.T) {
 	})
 }
 
-func benchmarkPrecompiled(addr string, test precompiledTest, bench *testing.B) {
+func benchmarkPrecompiled(addrStr string, test precompiledTest, bench *testing.B) {
 	if test.noBenchmark {
 		return
 	}
-	p := PrecompiledContractsByzantium[common.HexToAddress(addr)]
+	addr, _ := common.EvryAddressStringToAddressCheck(addrStr)
+	p := PrecompiledContractsByzantium[addr]
 	in := common.Hex2Bytes(test.input)
 	reqGas := p.RequiredGas(in)
-	contract := NewContract(AccountRef(common.HexToAddress("1337")),
+	contractAddr, _ := common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmefphuFF6s")
+	contract := NewContract(AccountRef(contractAddr),
 		nil, new(big.Int), reqGas)
 
 	var (
@@ -393,7 +397,7 @@ func BenchmarkPrecompiledEcrecover(bench *testing.B) {
 		expected: "000000000000000000000000ceaccac640adf55b2028469bd36ba501f28b699d",
 		name:     "",
 	}
-	benchmarkPrecompiled("01", t, bench)
+	benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ", t, bench)
 }
 
 // Benchmarks the sample inputs from the SHA256 precompile.
@@ -403,7 +407,7 @@ func BenchmarkPrecompiledSha256(bench *testing.B) {
 		expected: "811c7003375852fabd0d362e40e68607a12bdabae61a7d068fe5fdd1dbbf2a5d",
 		name:     "128",
 	}
-	benchmarkPrecompiled("02", t, bench)
+	benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK", t, bench)
 }
 
 // Benchmarks the sample inputs from the RIPEMD precompile.
@@ -413,7 +417,7 @@ func BenchmarkPrecompiledRipeMD(bench *testing.B) {
 		expected: "0000000000000000000000009215b8d9882ff46f0dfde6684d78e831467f65e6",
 		name:     "128",
 	}
-	benchmarkPrecompiled("03", t, bench)
+	benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN", t, bench)
 }
 
 // Benchmarks the sample inputs from the identiy precompile.
@@ -423,61 +427,61 @@ func BenchmarkPrecompiledIdentity(bench *testing.B) {
 		expected: "38d18acb67d25c8bb9942764b62f18e17054f66a817bd4295423adf9ed98873e000000000000000000000000000000000000000000000000000000000000001b38d18acb67d25c8bb9942764b62f18e17054f66a817bd4295423adf9ed98873e789d1dd423d25f0772d2748d60f7e4b81bb14d086eba8e8e8efb6dcff8a4ae02",
 		name:     "128",
 	}
-	benchmarkPrecompiled("04", t, bench)
+	benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW8vQxDxk", t, bench)
 }
 
 // Tests the sample inputs from the ModExp EIP 198.
 func TestPrecompiledModExp(t *testing.T) {
 	for _, test := range modexpTests {
-		testPrecompiled("05", test, t)
+		testPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW94KW4wg", test, t)
 	}
 }
 
 // Benchmarks the sample inputs from the ModExp EIP 198.
 func BenchmarkPrecompiledModExp(bench *testing.B) {
 	for _, test := range modexpTests {
-		benchmarkPrecompiled("05", test, bench)
+		benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW94KW4wg", test, bench)
 	}
 }
 
 // Tests the sample inputs from the elliptic curve addition EIP 213.
 func TestPrecompiledBn256Add(t *testing.T) {
 	for _, test := range bn256AddTests {
-		testPrecompiled("06", test, t)
+		testPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW9DoUTe1", test, t)
 	}
 }
 
 // Benchmarks the sample inputs from the elliptic curve addition EIP 213.
 func BenchmarkPrecompiledBn256Add(bench *testing.B) {
 	for _, test := range bn256AddTests {
-		benchmarkPrecompiled("06", test, bench)
+		benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW9DoUTe1", test, bench)
 	}
 }
 
 // Tests the sample inputs from the elliptic curve scalar multiplication EIP 213.
 func TestPrecompiledBn256ScalarMul(t *testing.T) {
 	for _, test := range bn256ScalarMulTests {
-		testPrecompiled("07", test, t)
+		testPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW9KMUV2x", test, t)
 	}
 }
 
 // Benchmarks the sample inputs from the elliptic curve scalar multiplication EIP 213.
 func BenchmarkPrecompiledBn256ScalarMul(bench *testing.B) {
 	for _, test := range bn256ScalarMulTests {
-		benchmarkPrecompiled("07", test, bench)
+		benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW9KMUV2x", test, bench)
 	}
 }
 
 // Tests the sample inputs from the elliptic curve pairing check EIP 197.
 func TestPrecompiledBn256Pairing(t *testing.T) {
 	for _, test := range bn256PairingTests {
-		testPrecompiled("08", test, t)
+		testPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW9NBqmcb", test, t)
 	}
 }
 
 // Behcnmarks the sample inputs from the elliptic curve pairing check EIP 197.
 func BenchmarkPrecompiledBn256Pairing(bench *testing.B) {
 	for _, test := range bn256PairingTests {
-		benchmarkPrecompiled("08", test, bench)
+		benchmarkPrecompiled("EH9uVaqWRxHuzJbroqzX18yxmeW9NBqmcb", test, bench)
 	}
 }

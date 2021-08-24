@@ -17,30 +17,30 @@
   "gasLimit": "0x47b760",
   "difficulty": "0x20000",
   "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "coinbase": "0x0000000000000000000000000000000000000000",
+  "coinbase": "EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",
   "alloc": {
-    "0000000000000000000000000000000000000001": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000002": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000003": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000004": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8vQxDxk": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000005": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW94KW4wg": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000006": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9DoUTe1": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000007": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9KMUV2x": {
       "balance": "0x01"
     },
-    "0000000000000000000000000000000000000008": {
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9NBqmcb": {
       "balance": "0x01"
     }
   }

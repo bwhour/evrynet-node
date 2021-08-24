@@ -56,7 +56,8 @@ func TestVerifyProposal(t *testing.T) {
 
 	// --------CASE 2--------
 	// Pass all validation
-	tx1 := types.NewTransaction(0, common.HexToAddress("A8A620a156121f6Ef0Bb0bF0FFe1B6A0e02834a1"), big.NewInt(10), 800000, big.NewInt(params.GasPriceConfig), nil)
+	to, _ := common.EvryAddressStringToAddressCheck("EYXe2YrqoxNYHW7tMLw63xtyZ7JB7tZf3Z")
+	tx1 := types.NewTransaction(0, to, big.NewInt(10), 800000, big.NewInt(params.GasPriceConfig), nil)
 	tx1, err = types.SignTx(tx1, types.HomesteadSigner{}, nodePrivateKey)
 	assert.NoError(t, err)
 
@@ -66,7 +67,7 @@ func TestVerifyProposal(t *testing.T) {
 
 	// --------CASE 3--------
 	// Will get ErrInsufficientFunds
-	tx2 := types.NewTransaction(0, common.HexToAddress("A8A620a156121f6Ef0Bb0bF0FFe1B6A0e02834a1"), big.NewInt(10), params.GasPriceConfig, big.NewInt(params.GasPriceConfig), nil)
+	tx2 := types.NewTransaction(0, to, big.NewInt(10), params.GasPriceConfig, big.NewInt(params.GasPriceConfig), nil)
 	tx2, err = types.SignTx(tx2, types.HomesteadSigner{}, nodePrivateKey)
 	assert.NoError(t, err)
 
@@ -77,7 +78,7 @@ func TestVerifyProposal(t *testing.T) {
 	// --------CASE 4--------
 	// Node propose fake block1 (fake signature)
 	// backend.VerifyHeader() will return error
-	tx3 := types.NewTransaction(0, common.HexToAddress("A8A620a156121f6Ef0Bb0bF0FFe1B6A0e02834a1"), big.NewInt(10), 800000, big.NewInt(params.GasPriceConfig), nil)
+	tx3 := types.NewTransaction(0, to, big.NewInt(10), 800000, big.NewInt(params.GasPriceConfig), nil)
 	tx3, err = types.SignTx(tx3, types.HomesteadSigner{}, nodePrivateKey)
 	assert.NoError(t, err)
 

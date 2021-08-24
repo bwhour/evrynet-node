@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/Evrynetlabs/evrynet-node/common"
 	"os"
 	"strings"
 	"sync"
@@ -195,7 +196,7 @@ func (ui *CommandlineUI) ApproveListing(request *ListRequest) (ListResponse, err
 	fmt.Printf("A request has been made to list all accounts. \n")
 	fmt.Printf("You can select which accounts the caller can see\n")
 	for _, account := range request.Accounts {
-		fmt.Printf("  [x] %v\n", account.Address.Hex())
+		fmt.Printf("  [s] %s\n", common.AddressToEvryAddressString(account.Address))
 		fmt.Printf("    URL: %v\n", account.URL)
 	}
 	fmt.Printf("-------------------------------------------\n")

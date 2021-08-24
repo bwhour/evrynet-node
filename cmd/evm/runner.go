@@ -108,12 +108,18 @@ func runCmd(ctx *cli.Context) error {
 		genesisConfig = new(core.Genesis)
 	}
 	if ctx.GlobalString(SenderFlag.Name) != "" {
-		sender = common.HexToAddress(ctx.GlobalString(SenderFlag.Name))
+		if addr, err := common.EvryAddressStringToAddressCheck(ctx.GlobalString(SenderFlag.Name));
+			err == nil {
+			sender = addr
+		}
 	}
 	statedb.CreateAccount(sender)
 
 	if ctx.GlobalString(ReceiverFlag.Name) != "" {
-		receiver = common.HexToAddress(ctx.GlobalString(ReceiverFlag.Name))
+		if addr, err := common.EvryAddressStringToAddressCheck(ctx.GlobalString(ReceiverFlag.Name));
+			err == nil {
+			receiver = addr
+		}
 	}
 
 	var (

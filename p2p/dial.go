@@ -277,7 +277,7 @@ func (s *dialstate) newTasks(nRunning int, peers map[enode.ID]*Peer, validatorAd
 		// Create dial task for missing validator nodes
 		for _, missingValAddr := range missingValPeers {
 			if peer, ok := discoveredPeers[missingValAddr]; ok {
-				s.log.Debug("Create dial task for missing validator nodes", "nodeAddress", peer.Address().Hex())
+				s.log.Debug("Create dial task for missing validator nodes", "nodeAddress", peer.Address().String())
 				t := &dialTask{flags: dynDialedConn, dest: peer}
 				if err := s.checkDial(t.dest, peers); err != nil {
 					s.log.Warn("Check dial task failed", "id", t.dest.ID, "addr", &net.TCPAddr{IP: t.dest.IP(), Port: t.dest.TCP()}, "err", err)

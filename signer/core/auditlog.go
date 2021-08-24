@@ -70,7 +70,7 @@ func (l *AuditLogger) ProviderSignTransaction(ctx context.Context, tx *types.Tra
 	}
 	l.log.Info("ProviderSignTransaction", "type", "request", "metadata", MetadataFromContext(ctx).String(),
 		"tx", hex.EncodeToString(tx.Data()),
-		"providerAddr", providerAddr.Hex(),
+		"providerAddr", providerAddr.String(),
 		"methodSelector", sel)
 
 	res, e := l.api.ProviderSignTransaction(ctx, tx, providerAddr, methodSelector)

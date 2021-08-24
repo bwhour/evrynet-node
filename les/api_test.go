@@ -382,7 +382,7 @@ func getFreeCap(ctx context.Context, t *testing.T, server *rpc.Client) uint64 {
 	return free
 }
 
-func init() {
+func TestMain(m *testing.M) {
 	flag.Parse()
 	// register the Delivery service which will run as a devp2p
 	// protocol when using the exec adapter
@@ -390,6 +390,7 @@ func init() {
 
 	log.PrintOrigins(true)
 	log.Root().SetHandler(log.LvlFilterHandler(log.Lvl(*loglevel), log.StreamHandler(colorable.NewColorableStderr(), log.TerminalFormat(true))))
+	os.Exit(m.Run())
 }
 
 var (

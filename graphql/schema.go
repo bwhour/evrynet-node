@@ -19,7 +19,7 @@ package graphql
 const schema string = `
     # Bytes32 is a 32 byte binary string, represented as 0x-prefixed hexadecimal.
     scalar Bytes32
-    # Address is a 20 byte Evrynet address, represented as 0x-prefixed hexadecimal.
+    # Address is a string of length 34, start with 'E'
     scalar Address
     # Bytes is an arbitrary length binary string, represented as 0x-prefixed hexadecimal.
     # An empty byte string is represented as '0x'. Byte strings must have an even number of hexadecimal nybbles.

@@ -53,7 +53,7 @@
       }
     },
     "difficulty":"0x20000",
-    "author":"0x0000000000000000000000000000000000000000",
+    "author":"EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",
     "timestamp":"0x59a4e76d",
     "parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000",
     "extraData":"0x0000000000000000000000000000000000000000000000000000000b4dc0ffee",
@@ -70,7 +70,7 @@
     "enode://0b96415a10f835106d83e090a0528eed5e7887e5c802a6d084e9f1993a9d0fc713781e6e4101f6365e9b91259712f291acc0a9e6e667e22023050d602c36fbe2@40.115.33.57:40414"
   ],
   "accounts":{
-    "0000000000000000000000000000000000000001":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -83,7 +83,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000002":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -96,7 +96,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000003":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -109,7 +109,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000004":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW8vQxDxk":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -122,7 +122,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000005":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW94KW4wg":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -135,7 +135,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000006":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9DoUTe1":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -149,7 +149,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000007":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9KMUV2x":{
       "balance":"1",
       "nonce":"0",
       "builtin":{
@@ -163,7 +163,7 @@
         }
       }
     },
-    "0000000000000000000000000000000000000008":{
+    "EH9uVaqWRxHuzJbroqzX18yxmeW9NBqmcb":{
       "balance":"1",
       "nonce":"0",
       "builtin":{

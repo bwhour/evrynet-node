@@ -331,6 +331,13 @@ func New(code string) (*Tracer, error) {
 		ctx.PushString(hexutil.Encode(popSlice(ctx)))
 		return 1
 	})
+
+	tracer.vm.PushGlobalGoFunction("toEvrAddr", func(ctx *duktape.Context) int {
+		addr := common.BytesToAddress(popSlice(ctx))
+		ctx.PushString(common.AddressToEvryAddressString(addr))
+		return 1
+	})
+
 	tracer.vm.PushGlobalGoFunction("toWord", func(ctx *duktape.Context) int {
 		var word common.Hash
 		if ptr, size := ctx.GetBuffer(-1); ptr != nil {

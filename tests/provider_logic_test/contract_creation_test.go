@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math/big"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -52,12 +51,12 @@ func TestMain(m *testing.M) {
 func TestCreateContractWithProviderAddress(t *testing.T) {
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
-	provideraddr := common.HexToAddress(providerAddrStr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerAddrStr)
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
 	var option types.CreateAccountOption
-	option.ProviderAddress = &provideraddr
+	option.ProviderAddress = &providerAddr
 
 	ethClient, err := evrclient.Dial(ethRPCEndpoint)
 	assert.NoError(t, err)
@@ -73,8 +72,8 @@ func TestCreateContractWithProviderAddress(t *testing.T) {
 func TestCreateContractWithProviderAndOwner(t *testing.T) {
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
-	providerAddr := common.HexToAddress(providerAddrStr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerAddrStr)
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
 	var option types.CreateAccountOption
@@ -95,7 +94,7 @@ func TestCreateContractWithProviderAndOwner(t *testing.T) {
 func TestCreateContractWithoutProviderAddress(t *testing.T) {
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
 
@@ -116,7 +115,7 @@ func TestCreateContractWithProviderSignature(t *testing.T) {
 	assert.NoError(t, err)
 	ppk, err := crypto.HexToECDSA(providerPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
 
@@ -129,16 +128,16 @@ func TestCreateContractWithProviderSignature(t *testing.T) {
 	assert.NoError(t, err)
 	tx, err = types.ProviderSignTx(tx, types.HomesteadSigner{}, ppk)
 	assert.NoError(t, err)
-	require.Error(t, ethClient.SendTransaction(context.Background(), tx))
+	require.Error(t, ethClient.SendTransaction(context.Background(), tx), "Must return error: redundant provider's signature")
 }
 
 func TestCreateContractWithProviderAddressWithoutGas(t *testing.T) {
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
-	provideraddr := common.HexToAddress(providerWithoutGasAddr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerWithoutGasAddr)
 	var option types.CreateAccountOption
-	option.ProviderAddress = &provideraddr
+	option.ProviderAddress = &providerAddr
 	option.OwnerAddress = &sender
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
@@ -157,12 +156,12 @@ func TestCreateContractWithProviderAddressWithoutGas(t *testing.T) {
 func TestCreateContractWithProviderAddressMustHaveOwnerAddress(t *testing.T) {
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
-	provideraddr := common.HexToAddress(providerAddrStr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerAddrStr)
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
 	var option types.CreateAccountOption
-	option.ProviderAddress = &provideraddr
+	option.ProviderAddress = &providerAddr
 	option.OwnerAddress = &sender
 
 	ethClient, err := evrclient.Dial(ethRPCEndpoint)
@@ -172,14 +171,14 @@ func TestCreateContractWithProviderAddressMustHaveOwnerAddress(t *testing.T) {
 	tx := types.NewContractCreation(nonce, big.NewInt(0), testGasLimit, big.NewInt(testGasPrice), payLoadBytes, option)
 	tx, err = types.SignTx(tx, types.HomesteadSigner{}, spk)
 	assert.NoError(t, err)
-	assert.Equal(t, strings.ToLower(senderAddrStr), strings.ToLower(tx.Owner().Hex()))
-	assert.Equal(t, strings.ToLower(providerAddrStr), strings.ToLower(tx.Provider().Hex()))
+	assert.Equal(t, senderAddrStr, common.AddressToEvryAddressString(*tx.Owner()))
+	assert.Equal(t, providerAddrStr, common.AddressToEvryAddressString(*tx.Provider()))
 }
 
 func TestCreateNormalContractMustHaveNoOwnerAndProviderAddress(t *testing.T) {
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	sender := common.HexToAddress(senderAddrStr)
+	sender, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
 	payLoadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
 
@@ -201,9 +200,9 @@ func assertTransactionSuccess(t *testing.T, client *evrclient.Client, txHash com
 		if err == nil {
 			assert.Equal(t, uint64(1), receipt.Status)
 			if contractCreation {
-				assert.NotEqual(t, receipt.ContractAddress, common.Address{})
+				assert.NotEqual(t, receipt.ContractAddress, common.Address{}, "not contract creation")
 			}
-			assert.Equal(t, gasPayer, receipt.GasPayer)
+			assert.Equal(t, gasPayer, receipt.GasPayer, "unexpected gas payer")
 			return
 		}
 		time.Sleep(1 * time.Second)

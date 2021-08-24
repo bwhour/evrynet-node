@@ -125,7 +125,7 @@ func (s *PublicTxPoolAPI) Content() map[string]map[string]map[string]*RPCTransac
 		for _, tx := range txs {
 			dump[fmt.Sprintf("%d", tx.Nonce())] = newRPCPendingTransaction(tx)
 		}
-		content["pending"][account.Hex()] = dump
+		content["pending"][account.String()] = dump
 	}
 	// Flatten the queued transactions
 	for account, txs := range queue {
@@ -133,7 +133,7 @@ func (s *PublicTxPoolAPI) Content() map[string]map[string]map[string]*RPCTransac
 		for _, tx := range txs {
 			dump[fmt.Sprintf("%d", tx.Nonce())] = newRPCPendingTransaction(tx)
 		}
-		content["queued"][account.Hex()] = dump
+		content["queued"][account.String()] = dump
 	}
 	return content
 }
@@ -159,7 +159,7 @@ func (s *PublicTxPoolAPI) Inspect() map[string]map[string]map[string]string {
 	// Define a formatter to flatten a transaction into a string
 	var format = func(tx *types.Transaction) string {
 		if to := tx.To(); to != nil {
-			return fmt.Sprintf("%s: %v wei + %v gas × %v wei", tx.To().Hex(), tx.Value(), tx.Gas(), tx.GasPrice())
+			return fmt.Sprintf("%s: %v wei + %v gas × %v wei", tx.To().String(), tx.Value(), tx.Gas(), tx.GasPrice())
 		}
 		return fmt.Sprintf("contract creation: %v wei + %v gas × %v wei", tx.Value(), tx.Gas(), tx.GasPrice())
 	}
@@ -169,7 +169,7 @@ func (s *PublicTxPoolAPI) Inspect() map[string]map[string]map[string]string {
 		for _, tx := range txs {
 			dump[fmt.Sprintf("%d", tx.Nonce())] = format(tx)
 		}
-		content["pending"][account.Hex()] = dump
+		content["pending"][account.String()] = dump
 	}
 	// Flatten the queued transactions
 	for account, txs := range queue {
@@ -177,7 +177,7 @@ func (s *PublicTxPoolAPI) Inspect() map[string]map[string]map[string]string {
 		for _, tx := range txs {
 			dump[fmt.Sprintf("%d", tx.Nonce())] = format(tx)
 		}
-		content["queued"][account.Hex()] = dump
+		content["queued"][account.String()] = dump
 	}
 	return content
 }
@@ -298,7 +298,8 @@ func (s *PrivateAccountAPI) DeriveAccount(url string, path string, pin *bool) (a
 func (s *PrivateAccountAPI) NewAccount(password string) (common.Address, error) {
 	acc, err := fetchKeystore(s.am).NewAccount(password)
 	if err == nil {
-		log.Info("Your new key was generated", "address", acc.Address)
+		log.Info("Your new key was generated", "address",
+			common.AddressToEvryAddressString(acc.Address))
 		log.Warn("Please backup your key file!", "path", acc.URL.Path)
 		log.Warn("Please remember your password!")
 		return acc.Address, nil
@@ -1130,13 +1131,16 @@ type RPCTransaction struct {
 	TransactionIndex hexutil.Uint    `json:"transactionIndex"`
 	Value            *hexutil.Big    `json:"value"`
 
-	Owner    common.Address `json:"owner"`
-	Provider common.Address `json:"provider"`
-
+	// data to create enterprise contract
+	Owner    *common.Address `json:"owner"`
+	Provider *common.Address `json:"provider"`
+	// data to modify providers transaction
+	Extra hexutil.Bytes `json:"extraData"`
+	// Signature values
 	V *hexutil.Big `json:"v"`
 	R *hexutil.Big `json:"r"`
 	S *hexutil.Big `json:"s"`
-
+	//Provider Signature values
 	PV *hexutil.Big `json:"pv"`
 	PR *hexutil.Big `json:"pr"`
 	PS *hexutil.Big `json:"ps"`
@@ -1167,19 +1171,12 @@ func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber
 		R:        (*hexutil.Big)(r),
 		S:        (*hexutil.Big)(s),
 
-		PV: (*hexutil.Big)(PV),
-		PR: (*hexutil.Big)(PR),
-		PS: (*hexutil.Big)(PS),
-	}
-
-	ownerAddr := tx.Owner()
-	if ownerAddr != nil {
-		result.Owner = *ownerAddr
-	}
-
-	providerAddr := tx.Provider()
-	if providerAddr != nil {
-		result.Provider = *providerAddr
+		PV:       (*hexutil.Big)(PV),
+		PR:       (*hexutil.Big)(PR),
+		PS:       (*hexutil.Big)(PS),
+		Owner:    tx.Owner(),
+		Provider: tx.Provider(),
+		Extra:    hexutil.Bytes(tx.ExtraData()),
 	}
 
 	if blockHash != (common.Hash{}) {
@@ -1528,9 +1525,9 @@ func SubmitTransaction(ctx context.Context, b Backend, tx *types.Transaction) (c
 			return common.Hash{}, err
 		}
 		addr := crypto.CreateAddress(from, tx.Nonce())
-		log.Info("Submitted contract creation", "fullhash", tx.Hash().Hex(), "contract", addr.Hex())
+		log.Info("Submitted contract creation", "fullhash", tx.Hash().Hex(), "contract", addr.String())
 	} else {
-		log.Info("Submitted transaction", "fullhash", tx.Hash().Hex(), "recipient", tx.To())
+		log.Info("Submitted transaction", "fullhash", tx.Hash().Hex(), "recipient", tx.To().String())
 	}
 	return tx.Hash(), nil
 }

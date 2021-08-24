@@ -19,16 +19,19 @@ import (
 
 func TestCheckIndex(t *testing.T) {
 	var (
+		a, _       = common.EvryAddressStringToAddressCheck("EQzeFSroGjB4xodbMYP1qydXeWYgypGSJe")
+		b, _       = common.EvryAddressStringToAddressCheck("EWmMyKETQCsTYEC3W51dZ3bpUWvn3XtrwG")
+		c, _       = common.EvryAddressStringToAddressCheck("EWjXq29urRYfhDfV35mnVaYVNB4GfN9o83")
 		candidates = []common.Address{
-			common.HexToAddress("0x560089aB68dc224b250f9588b3DB540D87A66b7a"),
-			common.HexToAddress("0x954e4BF2C68F13D97C45db0e02645D145dB6911f"),
+			a,
+			b,
 		}
 		epoch             = big.NewInt(40)
 		startBlock        = big.NewInt(1)
 		maxValidatorSize  = big.NewInt(100)
 		minValidatorStake = big.NewInt(20)
 		minVoteCap        = big.NewInt(10)
-		adminAddr         = common.HexToAddress("0x94F5B16552DCEaCbAdABA146D6e3235f4A8617a8")
+		adminAddr         = c
 	)
 	privateKey, err := crypto.HexToECDSA(privateKeyHex)
 	require.NoError(t, err)

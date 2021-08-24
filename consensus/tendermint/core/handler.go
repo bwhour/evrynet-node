@@ -366,7 +366,7 @@ func (c *core) handlePrecommit(msg message) error {
 	}
 
 	logger := c.getLogger().With("vote_block", vote.BlockNumber, "vote_round", vote.Round,
-		"from", msg.Address.Hex(), "block_hash", vote.BlockHash.Hex())
+		"from", msg.Address.String(), "block_hash", vote.BlockHash.Hex())
 	if vote.BlockNumber.Cmp(state.BlockNumber()) != 0 {
 		logger.Warnw("vote's block is different with current block")
 		if vote.BlockNumber.Cmp(state.BlockNumber()) > 0 {
@@ -437,7 +437,7 @@ func (c *core) handleCatchupRequest(msg message) error {
 	}
 
 	logger := c.getLogger().With("catchup_block", catchUpMsg.BlockNumber, "catchup_round", catchUpMsg.Round,
-		"catchup_step", catchUpMsg.Step, "from", msg.Address.Hex())
+		"catchup_step", catchUpMsg.Step, "from", msg.Address.String())
 	if catchUpMsg.BlockNumber.Cmp(blockNumber) != 0 || catchUpMsg.Round > round || (catchUpMsg.Round == round && catchUpMsg.Step > step) {
 		logger.Debugw(" Ignoring timeout because we're behind or different with block")
 		return nil
@@ -478,7 +478,7 @@ func (c *core) handleCatchUpReply(msg message) error {
 	if err := rlp.DecodeBytes(msg.Msg, &catchUpReplyMsg); err != nil {
 		return err
 	}
-	logger := c.getLogger().With("num_msg", len(catchUpReplyMsg.Payloads), "block", catchUpReplyMsg.BlockNumber, "from", msg.Address.Hex())
+	logger := c.getLogger().With("num_msg", len(catchUpReplyMsg.Payloads), "block", catchUpReplyMsg.BlockNumber, "from", msg.Address.String())
 	if state.BlockNumber().Cmp(catchUpReplyMsg.BlockNumber) != 0 {
 		logger.Debugw("catchUpReplyMsg block is different with current block, skipping")
 		return nil

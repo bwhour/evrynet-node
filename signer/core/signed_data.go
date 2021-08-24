@@ -145,7 +145,8 @@ func (api *SignerAPI) sign(addr common.MixedcaseAddress, req *SignDataRequest, l
 	}
 	pw, err := api.lookupOrQueryPassword(account.Address,
 		"Password for signing",
-		fmt.Sprintf("Please enter password for signing data with account %s", account.Address.Hex()))
+		fmt.Sprintf("Please enter password for signing data with account %s",
+			common.AddressToEvryAddressString(account.Address)))
 	if err != nil {
 		return nil, err
 	}
@@ -542,11 +543,15 @@ func (typedData *TypedData) EncodePrimitiveValue(encType string, encValue interf
 	switch encType {
 	case "address":
 		stringValue, ok := encValue.(string)
-		if !ok || !common.IsHexAddress(stringValue) {
+		if !ok {
 			return nil, dataMismatchError(encType, encValue)
 		}
+		addr, err := common.EvryAddressStringToAddressCheck(stringValue)
+		if err != nil{
+			return nil, err
+		}
 		retval := make([]byte, 32)
-		copy(retval[12:], common.HexToAddress(stringValue).Bytes())
+		copy(retval[12:], addr.Bytes())
 		return retval, nil
 	case "bool":
 		boolValue, ok := encValue.(bool)
@@ -637,17 +642,18 @@ func UnmarshalValidatorData(data interface{}) (ValidatorData, error) {
 	if !ok {
 		return ValidatorData{}, errors.New("validator input is not a map[string]interface{}")
 	}
-	addr, ok := raw["address"].(string)
+	addressStr, ok := raw["address"].(string)
 	if !ok {
 		return ValidatorData{}, errors.New("validator address is not sent as a string")
 	}
-	addrBytes, err := hexutil.Decode(addr)
+	if len(addressStr) == 0 {
+		return ValidatorData{}, errors.New("validator address is undefined")
+	}
+	address, err := common.EvryAddressStringToAddressCheck(addressStr)
 	if err != nil {
 		return ValidatorData{}, err
 	}
-	if !ok || len(addrBytes) == 0 {
-		return ValidatorData{}, errors.New("validator address is undefined")
-	}
+
 
 	message, ok := raw["message"].(string)
 	if !ok {
@@ -662,7 +668,7 @@ func UnmarshalValidatorData(data interface{}) (ValidatorData, error) {
 	}
 
 	return ValidatorData{
-		Address: common.BytesToAddress(addrBytes),
+		Address: address,
 		Message: messageBytes,
 	}, nil
 }
@@ -772,7 +778,12 @@ func formatPrimitiveValue(encType string, encValue interface{}) (string, error) 
 		if stringValue, ok := encValue.(string); !ok {
 			return "", fmt.Errorf("could not format value %v as address", encValue)
 		} else {
-			return common.HexToAddress(stringValue).String(), nil
+			address, err := common.EvryAddressStringToAddressCheck(stringValue)
+			if err != nil {
+				return "", err
+			}else{
+				return address.String(), nil
+			}
 		}
 	case "bool":
 		if boolValue, ok := encValue.(bool); !ok {

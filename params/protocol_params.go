@@ -85,6 +85,9 @@ const (
 	Bn256ScalarMulGas       uint64 = 40000  // Gas needed for an elliptic curve scalar multiplication
 	Bn256PairingBaseGas     uint64 = 100000 // Base price for an elliptic curve pairing check
 	Bn256PairingPerPointGas uint64 = 80000  // Per-point price for an elliptic curve pairing check
+
+	// TODO: change this to chainConfig
+	MaxProvider = 16 // Maximum of provider size for an enterprise contract
 )
 
 var (

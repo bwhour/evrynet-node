@@ -26,6 +26,7 @@ import (
 	"github.com/Evrynetlabs/evrynet-node/common"
 	"github.com/Evrynetlabs/evrynet-node/crypto"
 	"github.com/Evrynetlabs/evrynet-node/metrics"
+	"github.com/Evrynetlabs/evrynet-node/params"
 	"github.com/Evrynetlabs/evrynet-node/rlp"
 )
 
@@ -102,8 +103,8 @@ type Account struct {
 	Balance           *big.Int
 	Root              common.Hash // merkle root of the storage trie
 	CodeHash          []byte
-	OwnerAddress      *common.Address   `rlp:"nil"`
-	ProviderAddresses []*common.Address `rlp:"nil"`
+	OwnerAddress      *common.Address  `rlp:"nil"`
+	ProviderAddresses []common.Address `rlp:"nil"`
 }
 
 // AccountWithoutProvider represent an account without provider
@@ -122,7 +123,7 @@ func (a *AccountWithoutProvider) ToAccount() Account {
 		Root:              a.Root,
 		CodeHash:          a.CodeHash,
 		OwnerAddress:      nil,
-		ProviderAddresses: []*common.Address{},
+		ProviderAddresses: nil,
 	}
 }
 
@@ -428,6 +429,66 @@ func (s *stateObject) OwnerAddress() *common.Address {
 	return s.data.OwnerAddress
 }
 
-func (s *stateObject) ProviderAddresses() []*common.Address {
+func (s *stateObject) ProviderAddresses() []common.Address {
 	return s.data.ProviderAddresses
+}
+
+func (s *stateObject) CheckOwner(owner common.Address) error {
+	if s.data.OwnerAddress == nil {
+		return ErrOwnerNotFound
+	}
+	if *s.data.OwnerAddress != owner {
+		return ErrOnlyOwner
+	}
+	return nil
+}
+
+// AddProvider assumes that the permission for add provider here is valid
+func (s *stateObject) AddProvider(providerAddress common.Address) error {
+	if len(s.data.ProviderAddresses) >= params.MaxProvider {
+		return ErrMaxProvider
+	}
+
+	for _, addr := range s.data.ProviderAddresses {
+		if addr == providerAddress { // provider has been already added
+			return nil
+		}
+	}
+	var newProviders []common.Address
+	newProviders = append(newProviders, s.data.ProviderAddresses...)
+	newProviders = append(newProviders, providerAddress)
+	s.SetProvider(newProviders)
+	return nil
+}
+
+// RemoveProvider assumes that the permission for remove provider here is valid
+func (s *stateObject) RemoveProvider(providerAddress common.Address) error {
+	index := -1
+	for i, addr := range s.data.ProviderAddresses {
+		if addr == providerAddress {
+			index = i
+			break
+		}
+	}
+	if index == -1 { // provider has been already removed
+		return nil
+	}
+
+	var newProviders []common.Address
+	newProviders = append(newProviders, s.data.ProviderAddresses[:index]...)
+	newProviders = append(newProviders, s.data.ProviderAddresses[index+1:]...)
+	s.SetProvider(newProviders)
+	return nil
+}
+
+func (s *stateObject) SetProvider(providerAddresses []common.Address) {
+	s.db.journal.append(providersChange{
+		account: &s.address,
+		prev:    s.data.ProviderAddresses,
+	})
+	s.setProvider(providerAddresses)
+}
+
+func (s *stateObject) setProvider(providerAddresses []common.Address) {
+	s.data.ProviderAddresses = providerAddresses
 }

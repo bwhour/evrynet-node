@@ -519,7 +519,7 @@ func (f *faucet) apiHandler(conn *websocket.Conn) {
 			}
 			continue
 		}
-		if err = sendSuccess(conn, fmt.Sprintf("Funding request accepted for %s into %s", username, address.Hex())); err != nil {
+		if err = sendSuccess(conn, fmt.Sprintf("Funding request accepted for %s into %s", username, address.String())); err != nil {
 			log.Warn("Failed to send funding success to client", "err", err)
 			return
 		}
@@ -697,8 +697,9 @@ func authTwitter(url string) (string, string, common.Address, error) {
 	if err != nil {
 		return "", "", common.Address{}, err
 	}
-	address := common.HexToAddress(string(regexp.MustCompile("0x[0-9a-fA-F]{40}").Find(body)))
-	if address == (common.Address{}) {
+
+	address, err := common.EvryAddressStringToAddressCheck(string(regexp.MustCompile("E[1-9a-km-zA-HJ-NP-Z]{33}").Find(body)))
+	if address == (common.Address{}) || err != nil {
 		return "", "", common.Address{}, errors.New("No Evrynet address found to fund")
 	}
 	var avatar string
@@ -731,8 +732,8 @@ func authFacebook(url string) (string, string, common.Address, error) {
 	if err != nil {
 		return "", "", common.Address{}, err
 	}
-	address := common.HexToAddress(string(regexp.MustCompile("0x[0-9a-fA-F]{40}").Find(body)))
-	if address == (common.Address{}) {
+	address, err := common.EvryAddressStringToAddressCheck(string(regexp.MustCompile("E[1-9a-km-zA-HJ-NP-Z]{33}").Find(body)))
+	if address == (common.Address{}) || err != nil {
 		return "", "", common.Address{}, errors.New("No Evrynet address found to fund")
 	}
 	var avatar string
@@ -746,9 +747,9 @@ func authFacebook(url string) (string, string, common.Address, error) {
 // without actually performing any remote authentication. This mode is prone to
 // Byzantine attack, so only ever use for truly private networks.
 func authNoAuth(url string) (string, string, common.Address, error) {
-	address := common.HexToAddress(regexp.MustCompile("0x[0-9a-fA-F]{40}").FindString(url))
-	if address == (common.Address{}) {
+	address, err := common.EvryAddressStringToAddressCheck(string(regexp.MustCompile("E[1-9a-km-zA-HJ-NP-Z]{33}").FindString(url)))
+	if address == (common.Address{}) || err != nil {
 		return "", "", common.Address{}, errors.New("No Evrynet address found to fund")
 	}
-	return address.Hex() + "@noauth", "", address, nil
+	return address.String() + "@noauth", "", address, nil
 }

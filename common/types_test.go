@@ -117,9 +117,12 @@ func TestAddressUnmarshalJSON(t *testing.T) {
 		{`""`, true, nil},
 		{`"0x"`, true, nil},
 		{`"0x00"`, true, nil},
-		{`"0xG000000000000000000000000000000000000000"`, true, nil},
-		{`"0x0000000000000000000000000000000000000000"`, false, big.NewInt(0)},
-		{`"0x0000000000000000000000000000000000000010"`, false, big.NewInt(16)},
+		{`"0x0000000000000000000000000000000000000010"`, true, nil},
+		{`"0x0000000000000000000000000000000000000000"`, true, nil},
+		{`"EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9d"`, true, nil},
+		{`"EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9"`, false, big.NewInt(0)},
+		{`"EH9uVaqWRxHuzJbroqzX18yxmeWAGk5R72"`, false, big.NewInt(16)},
+		{`"DspJWUYDimq3AsTmnRfCX1iB99FDc7eWAR"`, true, nil},
 	}
 	for i, test := range tests {
 		var v Address
@@ -143,19 +146,18 @@ func TestAddressHexChecksum(t *testing.T) {
 		Input  string
 		Output string
 	}{
-		// Test cases from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md#specification
-		{"0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed", "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"},
-		{"0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359", "0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359"},
-		{"0xdbf03b407c01e7cd3cbea99509d93f8dddc8c6fb", "0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB"},
-		{"0xd1220a0cf47c7b9be7a2e6ba89f429762e7b9adb", "0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb"},
-		// Ensure that non-standard length input values are handled correctly
-		{"0xa", "0x000000000000000000000000000000000000000A"},
-		{"0x0a", "0x000000000000000000000000000000000000000A"},
-		{"0x00a", "0x000000000000000000000000000000000000000A"},
-		{"0x000000000000000000000000000000000000000a", "0x000000000000000000000000000000000000000A"},
+		{"ERRPbyyv9bu3jxbvjuKM7T9c8dQTUYZs6b", "ERRPbyyv9bu3jxbvjuKM7T9c8dQTUYZs6b"},
+		{"Eg5EzF235K8YkmWHfJJRQtZ6TR7kpSGacF", "Eg5EzF235K8YkmWHfJJRQtZ6TR7kpSGacF"},
+		{"EdCqGAkqad1E6FoshjEGTjsUfzGDtpHcKi", "EdCqGAkqad1E6FoshjEGTjsUfzGDtpHcKi"},
+		{"EcDhVmP9EthNpd8XTwvzQtG6sPV95EyCg6", "EcDhVmP9EthNpd8XTwvzQtG6sPV95EyCg6"},
+		{"EH9uVaqWRxHuzJbroqzX18yxmeW9cqfaTq", "EH9uVaqWRxHuzJbroqzX18yxmeW9cqfaTq"},
 	}
 	for i, test := range tests {
-		output := HexToAddress(test.Input).Hex()
+		addr, err := EvryAddressStringToAddressCheck(test.Input)
+		if err != nil {
+			t.Errorf("test #%d: failed to decode %v", i, err)
+		}
+		output := AddressToEvryAddressString(addr)
 		if output != test.Output {
 			t.Errorf("test #%d: failed to match when it should (%s != %s)", i, output, test.Output)
 		}
@@ -163,7 +165,7 @@ func TestAddressHexChecksum(t *testing.T) {
 }
 
 func BenchmarkAddressHex(b *testing.B) {
-	testAddr := HexToAddress("0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed")
+	testAddr, _ := EvryAddressStringToAddressCheck("ERRPbyyv9bu3jxbvjuKM7T9c8dQTUYZs6b")
 	for n := 0; n < b.N; n++ {
 		testAddr.Hex()
 	}
@@ -179,10 +181,8 @@ func TestMixedcaseAccount_Address(t *testing.T) {
 		Valid bool
 	}
 	if err := json.Unmarshal([]byte(`[
-		{"A" : "0xae967917c465db8578ca9024c205720b1a3651A9", "Valid": false},
-		{"A" : "0xAe967917c465db8578ca9024c205720b1a3651A9", "Valid": true},
-		{"A" : "0XAe967917c465db8578ca9024c205720b1a3651A9", "Valid": false},
-		{"A" : "0x1111111111111111111112222222222223333323", "Valid": true}
+		{"A" : "EZ53L1cPokpVFR2dsuRbSM58G9x74KDeQ4", "Valid": true},
+		{"A" : "EJi9Rf88LxzNaQ9LbtFTrifRcEMw8hREvg", "Valid": true}
 		]`), &res); err != nil {
 		t.Fatal(err)
 	}
@@ -196,13 +196,13 @@ func TestMixedcaseAccount_Address(t *testing.T) {
 	//These should throw exceptions:
 	var r2 []MixedcaseAddress
 	for _, r := range []string{
-		`["0x11111111111111111111122222222222233333"]`,     // Too short
-		`["0x111111111111111111111222222222222333332"]`,    // Too short
-		`["0x11111111111111111111122222222222233333234"]`,  // Too long
-		`["0x111111111111111111111222222222222333332344"]`, // Too long
-		`["1111111111111111111112222222222223333323"]`,     // Missing 0x
-		`["x1111111111111111111112222222222223333323"]`,    // Missing 0
-		`["0xG111111111111111111112222222222223333323"]`,   //Non-hex
+		`["EZ53L1cPokpVFR2dsuRbSM58G9x74KDe"]`,        // Too short
+		`["EZ53L1cPokpVFR2dsuRbSM58G9KDeQ4"]`,         // Too short
+		`["EZ53L1cPokpVFR2dsuRbSM58G9x74KDeQ4ddd"]`,   // Too long
+		`["EZ53L1cPokpVFR2dsuRbSM58G9x74KkdwefDeQ4"]`, // Too long
+		`["EZ53L1cPokpVFR2dsuRbSM58G9x74KDOOeQ4"]`,    // wrong 'O'
+		`["EZ53L1cPokpVFR2dsuRbSM58llG9x74KDOOeQ4"]`,  // wrong 'l'
+		`["E9jSLuK76aMcRytYrV6GxDoLdehAKWJRfK"]`,      // wrong byte prefix 32
 	} {
 		if err := json.Unmarshal([]byte(r), &r2); err == nil {
 			t.Errorf("Expected failure, input %v", r)
@@ -386,5 +386,51 @@ func TestAddress_Value(t *testing.T) {
 				t.Errorf("Address.Value() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestAddressToEvryAddressString(t *testing.T) {
+	var tests = []struct {
+		Input    string
+		Expect   string
+		WantFail bool
+	}{
+		{"0x0000000000000000000000000000000000000000",  "EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9", false},
+		{"0x0000000000000000000000000000000000000011",  "EH9uVaqWRxHuzJbroqzX18yxmeWAULFYZT", false},
+	}
+	for i, test := range tests {
+		address := HexToAddress(test.Input)
+		evryAddressString := AddressToEvryAddressString(address)
+		isEqual := strings.Compare(evryAddressString, test.Expect) == 0
+		if isEqual == test.WantFail {
+			t.Errorf("test #%d: unexpected, output: %s, expected: %s", i, evryAddressString, test.Expect)
+		}
+
+	}
+}
+
+func TestEvryAddressStringToAddress(t *testing.T) {
+	var tests = []struct {
+		EvryAddrssStr string
+		Expect        *big.Int
+		WantFail      bool
+	}{
+		{"EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",  new(big.Int).SetUint64(0), false},
+		{"EH9uVaqWRxHuzJbroqzX18yxmeWAopEdUM",  new(big.Int).SetUint64(20), false},
+		{"EH9uVaqWRxHuzJbroqzX18yxmeWBLHhJUd",  new(big.Int).SetUint64(25), false},
+		{"EH9uVaqWRxHuzJbroqzX18yxmeWBLHhJUd",  new(big.Int).SetUint64(26), true},
+	}
+	for i, test := range tests {
+		addr, err := EvryAddressStringToAddressCheck(test.EvryAddrssStr)
+		if err != nil && !test.WantFail {
+			t.Errorf("test #%d: unexpected, error: %v", i, err)
+		}
+		res := new(big.Int).SetBytes(addr.Bytes())
+		isEqual := res.Cmp(test.Expect) == 0
+
+		if isEqual == test.WantFail {
+			t.Errorf("test #%d: unexpected, Output:%v, Expect:%v", i, res.Uint64(), test.Expect.Uint64())
+		}
+
 	}
 }

@@ -104,10 +104,11 @@ It is possible to refer to a file containing the message.`,
 		signatureHex := ctx.Args().Get(1)
 		message := getMessage(ctx, 2)
 
-		if !common.IsHexAddress(addressStr) {
+		address, err := common.EvryAddressStringToAddressCheck(addressStr)
+
+		if err != nil {
 			utils.Fatalf("Invalid address: %s", addressStr)
 		}
-		address := common.HexToAddress(addressStr)
 		signature, err := hex.DecodeString(signatureHex)
 		if err != nil {
 			utils.Fatalf("Signature encoding is not hexadecimal: %v", err)
@@ -124,7 +125,7 @@ It is possible to refer to a file containing the message.`,
 		out := outputVerify{
 			Success:            success,
 			RecoveredPublicKey: hex.EncodeToString(recoveredPubkeyBytes),
-			RecoveredAddress:   recoveredAddress.Hex(),
+			RecoveredAddress:   common.AddressToEvryAddressString(recoveredAddress),
 		}
 		if ctx.Bool(jsonFlag.Name) {
 			mustPrintJSON(out)

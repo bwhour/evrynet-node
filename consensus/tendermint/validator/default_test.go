@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	testAddress  = "70524d664ffe731100208a0154e556f9bb679ae6"
-	testAddress2 = "b37866a925bccd69cfa98d43b510f1d23d78a851"
+	testAddress  = "ETPomY44tjk5aaQVhVSeT5WBkq6n3QbRLr"
+	testAddress2 = "EZWrgXmSqtUc46GE7cr63r8sBh1MQefwDt"
 )
 
 func TestValidatorSet(t *testing.T) {
@@ -28,11 +28,15 @@ func TestValidatorSet(t *testing.T) {
 
 func TestDefaultSet_GetNeighbor(t *testing.T) {
 	var (
+		a, _      = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9")
+		b, _      = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ")
+		c, _      = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK")
+		d, _      = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN")
 		addresses = []common.Address{
-			common.HexToAddress("0x0"),
-			common.HexToAddress("0x1"),
-			common.HexToAddress("0x2"),
-			common.HexToAddress("0x3"),
+			a,
+			b,
+			c,
+			d,
 		}
 		valSet      = newDefaultSet(addresses, tendermint.RoundRobin, 0)
 		neighbors   = valSet.GetNeighbors(addresses[0])
@@ -69,7 +73,7 @@ func testNewValidatorSet(t *testing.T) {
 		key, _ := crypto.GenerateKey()
 		addr := crypto.PubkeyToAddress(key.PublicKey)
 		val := New(addr)
-		log.Printf("index %d address %s", i, addr.Hex())
+		log.Printf("index %d address %s", i, addr.String())
 
 		b = append(b, val.Address().Bytes()...)
 	}
@@ -101,10 +105,8 @@ func testNewValidatorSet(t *testing.T) {
 }
 
 func testNormalValSet(t *testing.T) {
-	b1 := common.Hex2Bytes(testAddress)
-	b2 := common.Hex2Bytes(testAddress2)
-	addr1 := common.BytesToAddress(b1)
-	addr2 := common.BytesToAddress(b2)
+	addr1, _ := common.EvryAddressStringToAddressCheck(testAddress)
+	addr2, _ := common.EvryAddressStringToAddressCheck(testAddress2)
 	val1 := New(addr1)
 	val2 := New(addr2)
 
@@ -128,7 +130,7 @@ func testNormalValSet(t *testing.T) {
 		t.Errorf("validator mismatch: have %v, want %v", val, val2)
 	}
 	// test get by invalid address
-	invalidAddr := common.HexToAddress("0x9535b2e7faaba5288511d89341d94a38063a349b")
+	invalidAddr, _ := common.EvryAddressStringToAddressCheck("EWkrWEDFaq1H5YgDWg6WWjW8JVBfZstza6")
 	if _, val := valSet.GetByAddress(invalidAddr); val != nil {
 		t.Errorf("validator mismatch: have %v, want nil", val)
 	}

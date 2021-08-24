@@ -26,7 +26,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Evrynetlabs/evrynet-node/common"
 	"github.com/Evrynetlabs/evrynet-node/log"
 )
 
@@ -196,7 +195,7 @@ func (info *nodeInfos) Report() map[string]string {
 				Address string `json:"address"`
 			}
 			if err := json.Unmarshal([]byte(info.keyJSON), &key); err == nil {
-				report["Signer account"] = common.HexToAddress(key.Address).Hex()
+				report["Signer account"] = key.Address
 			} else {
 				log.Error("Failed to retrieve signer address", "err", err)
 			}

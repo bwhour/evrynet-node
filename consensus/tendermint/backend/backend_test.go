@@ -161,11 +161,13 @@ func TestBackend_Gossip(t *testing.T) {
 		}
 		genesisHeader = tests_utils.MakeGenesisHeader(validators)
 		be            = mustCreateAndStartNewBackend(t, nodePrivateKey, genesisHeader, validators)
-
-		nodeAddrs = []common.Address{
-			common.HexToAddress("1"),
-			common.HexToAddress("2"),
-			common.HexToAddress("3"),
+		a, _          = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ")
+		b, _          = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK")
+		c, _          = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN")
+		nodeAddrs     = []common.Address{
+			a,
+			b,
+			c,
 			nodeAddr,
 		}
 		expectedData = "aaa"
@@ -266,9 +268,12 @@ func TestBackend_Multicast(t *testing.T) {
 		//	common.HexToAddress("3"),
 		//	nodeAddr,
 		//}
+
+		a, _      = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8fmHkiJ")
+		b, _      = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK")
 		sentAddrs = map[common.Address]bool{
-			common.HexToAddress("1"): true,
-			common.HexToAddress("2"): true,
+			a: true,
+			b: true,
 		}
 		expectedData = "aaa"
 	)

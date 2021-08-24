@@ -131,7 +131,7 @@ func (w *wizard) deployFaucet() {
 			infos.node.keyJSON, infos.node.keyPass = "", ""
 		} else {
 			fmt.Println()
-			fmt.Printf("Reuse previous (%s) funding account (y/n)? (default = yes)\n", key.Address.Hex())
+			fmt.Printf("Reuse previous (%s) funding account (y/n)? (default = yes)\n", key.Address.String())
 			if !w.readDefaultYesNo(true) {
 				infos.node.keyJSON, infos.node.keyPass = "", ""
 			}

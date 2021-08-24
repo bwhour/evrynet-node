@@ -311,7 +311,11 @@ func setCredential(ctx *cli.Context) error {
 		return err
 	}
 
-	address := ctx.Args().First()
+	addressStr := ctx.Args().First()
+	if _, err := common.EvryAddressStringToAddressCheck(addressStr); err != nil {
+		utils.Fatalf(err.Error())
+	}
+
 	password := getPassPhrase("Enter a passphrase to store with this address.", true)
 
 	stretchedKey, err := readMasterKey(ctx, nil)
@@ -324,8 +328,8 @@ func setCredential(ctx *cli.Context) error {
 
 	// Initialize the encrypted storages
 	pwStorage := storage.NewAESEncryptedStorage(filepath.Join(vaultLocation, "credentials.json"), pwkey)
-	pwStorage.Put(address, password)
-	log.Info("Credential store updated", "key", address)
+	pwStorage.Put(addressStr, password)
+	log.Info("Credential store updated", "key", addressStr)
 	return nil
 }
 
@@ -640,7 +644,8 @@ func testExternalUI(api *core.SignerAPI) {
 	ctx = context.WithValue(ctx, "local", "main")
 	errs := make([]string, 0)
 
-	a := common.HexToAddress("0xdeadbeef000000000000000000000000deadbeef")
+	a, _ := common.EvryAddressStringToAddressCheck("EdTKeF2ugJwiN4su8qeq2VbDU1zMthLSMr")
+
 	addErr := func(errStr string) {
 		log.Info("Test error", "error", errStr)
 		errs = append(errs, errStr)
@@ -688,7 +693,7 @@ func testExternalUI(api *core.SignerAPI) {
 		cliqueHeader := types.Header{
 			common.HexToHash("0000H45H"),
 			common.HexToHash("0000H45H"),
-			common.HexToAddress("0000H45H"),
+			common.Address{},
 			common.HexToHash("0000H00H"),
 			common.HexToHash("0000H45H"),
 			common.HexToHash("0000H45H"),
@@ -706,15 +711,15 @@ func testExternalUI(api *core.SignerAPI) {
 		if err != nil {
 			utils.Fatalf("Should not error: %v", err)
 		}
-		addr, _ := common.NewMixedcaseAddressFromString("0x0011223344556677889900112233445566778899")
+		addr, _ := common.NewMixedcaseAddressFromString("EHAG23hA6q1vYjdB9Q88pnfYLchdKAiNeU")
 		_, err = api.SignData(ctx, accounts.MimetypeClique, *addr, hexutil.Encode(cliqueRlp))
 		expectApprove("signdata - clique header", err)
 	}
 	{ // Sign data test - typed data
 		api.UI.ShowInfo("Please approve the next request for signing EIP-712 typed data")
 		time.Sleep(delay)
-		addr, _ := common.NewMixedcaseAddressFromString("0x0011223344556677889900112233445566778899")
-		data := `{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"Person":[{"name":"name","type":"string"},{"name":"test","type":"uint8"},{"name":"wallet","type":"address"}],"Mail":[{"name":"from","type":"Person"},{"name":"to","type":"Person"},{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Ether Mail","version":"1","chainId":"1","verifyingContract":"0xCCCcccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"},"message":{"from":{"name":"Cow","test":"3","wallet":"0xcD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"},"to":{"name":"Bob","wallet":"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB","test":"2"},"contents":"Hello, Bob!"}}`
+		addr, _ := common.NewMixedcaseAddressFromString("EHAG23hA6q1vYjdB9Q88pnfYLchdKAiNeU")
+		data := `{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"Person":[{"name":"name","type":"string"},{"name":"test","type":"uint8"},{"name":"wallet","type":"address"}],"Mail":[{"name":"from","type":"Person"},{"name":"to","type":"Person"},{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Ether Mail","version":"1","chainId":"1","verifyingContract":"EbpngUGwQ6fR3T7XdP4NbEoPg3ugbofgeN"},"message":{"from":{"name":"Cow","test":"3","wallet":"Ebricr1hUkgTx8n4a3zNQBrbRnmzVHdaGf"},"to":{"name":"Bob","wallet":"EaGYkPzKV5xxTMa4E5yDdEKGmMHtQVHX5f","test":"2"},"contents":"Hello, Bob!"}}`
 		//_, err := api.SignData(ctx, accounts.MimetypeTypedData, *addr, hexutil.Encode([]byte(data)))
 		var typedData core.TypedData
 		err := json.Unmarshal([]byte(data), &typedData)
@@ -724,14 +729,14 @@ func testExternalUI(api *core.SignerAPI) {
 	{ // Sign data test - plain text
 		api.UI.ShowInfo("Please approve the next request for signing text")
 		time.Sleep(delay)
-		addr, _ := common.NewMixedcaseAddressFromString("0x0011223344556677889900112233445566778899")
+		addr, _ := common.NewMixedcaseAddressFromString("EHAG23hA6q1vYjdB9Q88pnfYLchdKAiNeU")
 		_, err := api.SignData(ctx, accounts.MimetypeTextPlain, *addr, hexutil.Encode([]byte("hello world")))
 		expectApprove("signdata - text", err)
 	}
 	{ // Sign data test - plain text reject
 		api.UI.ShowInfo("Please deny the next request for signing text")
 		time.Sleep(delay)
-		addr, _ := common.NewMixedcaseAddressFromString("0x0011223344556677889900112233445566778899")
+		addr, _ := common.NewMixedcaseAddressFromString("EHAG23hA6q1vYjdB9Q88pnfYLchdKAiNeU")
 		_, err := api.SignData(ctx, accounts.MimetypeTextPlain, *addr, hexutil.Encode([]byte("hello world")))
 		expectDeny("signdata - text", err)
 	}
@@ -839,8 +844,11 @@ func decryptSeed(keyjson []byte, auth string) ([]byte, error) {
 func GenDoc(ctx *cli.Context) {
 
 	var (
-		a    = common.HexToAddress("0xdeadbeef000000000000000000000000deadbeef")
-		b    = common.HexToAddress("0x1111111122222222222233333333334444444444")
+		a, _ = common.EvryAddressStringToAddressCheck("EdTKeF2ugJwiN4su8qeq2VbDU1zMthLSMr")
+		b, _ = common.EvryAddressStringToAddressCheck("EJi9Rf8N8pFfEEM4ZXBMvmK9q8RA3FGtLk")
+		c, _ = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9")
+		d, _ = common.EvryAddressStringToAddressCheck("EgVWUh8o98knojjwqGKqVGFkQ9m55ikaHX")
+
 		meta = core.Metadata{
 			Scheme:    "http",
 			Local:     "localhost:8545",
@@ -970,8 +978,8 @@ func GenDoc(ctx *cli.Context) {
 			"Note: the UI is free to respond with any address the caller, regardless of whether it exists or not",
 			&core.ListResponse{
 				Accounts: []accounts.Account{
-					{common.HexToAddress("0xcowbeef000000cowbeef00000000000000000c0w"), accounts.URL{Path: ".. ignored .."}},
-					{common.HexToAddress("0xffffffffffffffffffffffffffffffffffffffff"), accounts.URL{}},
+					{c, accounts.URL{Path: ".. ignored .."}},
+					{d, accounts.URL{}},
 				}})
 	}
 

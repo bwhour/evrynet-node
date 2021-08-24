@@ -578,7 +578,7 @@ func (w *wallet) SignTx(account accounts.Account, tx *types.Transaction, chainID
 		return nil, err
 	}
 	if sender != account.Address {
-		return nil, fmt.Errorf("signer mismatch: expected %s, got %s", account.Address.Hex(), sender.Hex())
+		return nil, fmt.Errorf("signer mismatch: expected %s, got %s", account.Address.String(), sender.String())
 	}
 	return signed, nil
 }
@@ -625,7 +625,7 @@ func (w *wallet) ProviderSignTx(account accounts.Account, tx *types.Transaction,
 	}
 
 	if signer != account.Address {
-		return nil, fmt.Errorf("signer mismatch: expected %s, got %s", account.Address.Hex(), signer.Hex())
+		return nil, fmt.Errorf("signer mismatch: expected %s, got %s", account.Address.String(), signer.String())
 	}
 
 	return signed, nil

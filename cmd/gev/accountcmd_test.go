@@ -53,15 +53,15 @@ func TestAccountList(t *testing.T) {
 	defer geth.ExpectExit()
 	if runtime.GOOS == "windows" {
 		geth.Expect(`
-Account #0: {7ef5a6135f1fd6a02593eedc869c6d41d934aef8} keystore://{{.Datadir}}\keystore\UTC--2016-03-22T12-57-55.920751759Z--7ef5a6135f1fd6a02593eedc869c6d41d934aef8
-Account #1: {f466859ead1932d743d622cb74fc058882e8648a} keystore://{{.Datadir}}\keystore\aaa
-Account #2: {289d485d9771714cce91d3393d764e1311907acc} keystore://{{.Datadir}}\keystore\zzz
+Account #0: {EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG} keystore://{{.Datadir}}\keystore\UTC--2016-03-22T12-57-55.920751759Z--EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG
+Account #1: {EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB} keystore://{{.Datadir}}\keystore\aaa
+Account #2: {ELrewT2HwDPKCFbAW2A2ttbKnFwFZNfKXp} keystore://{{.Datadir}}\keystore\zzz
 `)
 	} else {
 		geth.Expect(`
-Account #0: {7ef5a6135f1fd6a02593eedc869c6d41d934aef8} keystore://{{.Datadir}}/keystore/UTC--2016-03-22T12-57-55.920751759Z--7ef5a6135f1fd6a02593eedc869c6d41d934aef8
-Account #1: {f466859ead1932d743d622cb74fc058882e8648a} keystore://{{.Datadir}}/keystore/aaa
-Account #2: {289d485d9771714cce91d3393d764e1311907acc} keystore://{{.Datadir}}/keystore/zzz
+Account #0: {EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG} keystore://{{.Datadir}}/keystore/UTC--2016-03-22T12-57-55.920751759Z--EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG
+Account #1: {EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB} keystore://{{.Datadir}}/keystore/aaa
+Account #2: {ELrewT2HwDPKCFbAW2A2ttbKnFwFZNfKXp} keystore://{{.Datadir}}/keystore/zzz
 `)
 	}
 }
@@ -78,8 +78,8 @@ Repeat passphrase: {{.InputLine "foobar"}}
 Your new key was generated
 `)
 	geth.ExpectRegexp(`
-Public address of the key:   0x[0-9a-fA-F]{40}
-Path of the secret key file: .*UTC--.+--[0-9a-f]{40}
+Public address of the key:   E[1-9a-km-zA-HJ-NP-Z]{33}
+Path of the secret key file: .*UTC--.+--E[1-9a-km-zA-HJ-NP-Z]{33}
 
 - You can share your public address with anyone. Others need it to interact with you.
 - You must NEVER share the secret key with anyone! The key controls access to your funds!
@@ -104,10 +104,10 @@ func TestAccountUpdate(t *testing.T) {
 	datadir := tmpDatadirWithKeystore(t)
 	geth := runGeth(t, "account", "update",
 		"--datadir", datadir, "--lightkdf",
-		"f466859ead1932d743d622cb74fc058882e8648a")
+		"EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB")
 	defer geth.ExpectExit()
 	geth.Expect(`
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 1/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 1/3
 !! Unsupported terminal, password will be echoed.
 Passphrase: {{.InputLine "foobar"}}
 Please give a new password. Do not forget this password.
@@ -122,7 +122,7 @@ func TestWalletImport(t *testing.T) {
 	geth.Expect(`
 !! Unsupported terminal, password will be echoed.
 Passphrase: {{.InputLine "foo"}}
-Address: {d4584b5f6229b7be90727b0fc8c6b91bb427821f}
+Address: {EcWgX4DxhvAcNwzzo7jQ6SweutC7B4wiAc}
 `)
 
 	files, err := ioutil.ReadDir(filepath.Join(geth.Datadir, "keystore"))
@@ -145,10 +145,10 @@ func TestUnlockFlag(t *testing.T) {
 	datadir := tmpDatadirWithKeystore(t)
 	geth := runGeth(t,
 		"--datadir", datadir, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
-		"--unlock", "f466859ead1932d743d622cb74fc058882e8648a",
+		"--unlock", "EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB",
 		"js", "testdata/empty.js")
 	geth.Expect(`
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 1/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 1/3
 !! Unsupported terminal, password will be echoed.
 Passphrase: {{.InputLine "foobar"}}
 `)
@@ -156,7 +156,7 @@ Passphrase: {{.InputLine "foobar"}}
 
 	wantMessages := []string{
 		"Unlocked account",
-		"=0xf466859eAD1932D743d622CB74FC058882E8648A",
+		"=EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB",
 	}
 	for _, m := range wantMessages {
 		if !strings.Contains(geth.StderrText(), m) {
@@ -169,17 +169,17 @@ func TestUnlockFlagWrongPassword(t *testing.T) {
 	datadir := tmpDatadirWithKeystore(t)
 	geth := runGeth(t,
 		"--datadir", datadir, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
-		"--unlock", "f466859ead1932d743d622cb74fc058882e8648a")
+		"--unlock", "EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB")
 	defer geth.ExpectExit()
 	geth.Expect(`
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 1/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 1/3
 !! Unsupported terminal, password will be echoed.
 Passphrase: {{.InputLine "wrong1"}}
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 2/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 2/3
 Passphrase: {{.InputLine "wrong2"}}
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 3/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 3/3
 Passphrase: {{.InputLine "wrong3"}}
-Fatal: Failed to unlock account f466859ead1932d743d622cb74fc058882e8648a (could not decrypt key with given passphrase)
+Fatal: Failed to unlock account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB (could not decrypt key with given passphrase)
 `)
 }
 
@@ -201,8 +201,8 @@ Passphrase: {{.InputLine "foobar"}}
 
 	wantMessages := []string{
 		"Unlocked account",
-		"=0x7EF5A6135f1FD6a02593eEdC869c6D41D934aef8",
-		"=0x289d485D9771714CCe91D3393D764E1311907ACc",
+		"=EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG",
+		"=ELrewT2HwDPKCFbAW2A2ttbKnFwFZNfKXp",
 	}
 	for _, m := range wantMessages {
 		if !strings.Contains(geth.StderrText(), m) {
@@ -221,8 +221,8 @@ func TestUnlockFlagPasswordFile(t *testing.T) {
 
 	wantMessages := []string{
 		"Unlocked account",
-		"=0x7EF5A6135f1FD6a02593eEdC869c6D41D934aef8",
-		"=0x289d485D9771714CCe91D3393D764E1311907ACc",
+		"=EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG",
+		"=ELrewT2HwDPKCFbAW2A2ttbKnFwFZNfKXp",
 	}
 	for _, m := range wantMessages {
 		if !strings.Contains(geth.StderrText(), m) {
@@ -246,7 +246,7 @@ func TestUnlockFlagAmbiguous(t *testing.T) {
 	store := filepath.Join("..", "..", "accounts", "keystore", "testdata", "dupes")
 	geth := runGeth(t,
 		"--keystore", store, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
-		"--unlock", "f466859ead1932d743d622cb74fc058882e8648a",
+		"--unlock", "EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB",
 		"js", "testdata/empty.js")
 	defer geth.ExpectExit()
 
@@ -256,10 +256,10 @@ func TestUnlockFlagAmbiguous(t *testing.T) {
 		return abs
 	})
 	geth.Expect(`
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 1/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 1/3
 !! Unsupported terminal, password will be echoed.
 Passphrase: {{.InputLine "foobar"}}
-Multiple key files exist for address f466859ead1932d743d622cb74fc058882e8648a:
+Multiple key files exist for address EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB:
    keystore://{{keypath "1"}}
    keystore://{{keypath "2"}}
 Testing your passphrase against all of them...
@@ -271,7 +271,7 @@ In order to avoid this warning, you need to remove the following duplicate key f
 
 	wantMessages := []string{
 		"Unlocked account",
-		"=0xf466859eAD1932D743d622CB74FC058882E8648A",
+		"=EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB",
 	}
 	for _, m := range wantMessages {
 		if !strings.Contains(geth.StderrText(), m) {
@@ -284,7 +284,7 @@ func TestUnlockFlagAmbiguousWrongPassword(t *testing.T) {
 	store := filepath.Join("..", "..", "accounts", "keystore", "testdata", "dupes")
 	geth := runGeth(t,
 		"--keystore", store, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
-		"--unlock", "f466859ead1932d743d622cb74fc058882e8648a")
+		"--unlock", "EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB")
 	defer geth.ExpectExit()
 
 	// Helper for the expect template, returns absolute keystore path.
@@ -293,10 +293,10 @@ func TestUnlockFlagAmbiguousWrongPassword(t *testing.T) {
 		return abs
 	})
 	geth.Expect(`
-Unlocking account f466859ead1932d743d622cb74fc058882e8648a | Attempt 1/3
+Unlocking account EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB | Attempt 1/3
 !! Unsupported terminal, password will be echoed.
 Passphrase: {{.InputLine "wrong"}}
-Multiple key files exist for address f466859ead1932d743d622cb74fc058882e8648a:
+Multiple key files exist for address EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB:
    keystore://{{keypath "1"}}
    keystore://{{keypath "2"}}
 Testing your passphrase against all of them...

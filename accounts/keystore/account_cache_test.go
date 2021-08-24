@@ -36,17 +36,20 @@ import (
 
 var (
 	cachetestDir, _   = filepath.Abs(filepath.Join("testdata", "keystore"))
+	a, _              = common.EvryAddressStringToAddressCheck("EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG")
+	b, _              = common.EvryAddressStringToAddressCheck("EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB")
+	c, _              = common.EvryAddressStringToAddressCheck("ELrewT2HwDPKCFbAW2A2ttbKnFwFZNfKXp")
 	cachetestAccounts = []accounts.Account{
 		{
-			Address: common.HexToAddress("7ef5a6135f1fd6a02593eedc869c6d41d934aef8"),
-			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(cachetestDir, "UTC--2016-03-22T12-57-55.920751759Z--7ef5a6135f1fd6a02593eedc869c6d41d934aef8")},
+			Address: a,
+			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(cachetestDir, "UTC--2016-03-22T12-57-55.920751759Z--EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG")},
 		},
 		{
-			Address: common.HexToAddress("f466859ead1932d743d622cb74fc058882e8648a"),
+			Address: b,
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(cachetestDir, "aaa")},
 		},
 		{
-			Address: common.HexToAddress("289d485d9771714cce91d3393d764e1311907acc"),
+			Address: c,
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(cachetestDir, "zzz")},
 		},
 	}
@@ -145,35 +148,43 @@ func TestCacheAddDeleteOrder(t *testing.T) {
 	cache, _ := newAccountCache("testdata/no-such-dir")
 	cache.watcher.running = true // prevent unexpected reloads
 
-	accs := []accounts.Account{
+	accinfos := []struct {
+		Address string
+		URL     accounts.URL
+	}{
 		{
-			Address: common.HexToAddress("095e7baea6a6c7c4c2dfeb977efac326af552d87"),
+			Address: "EJ1Sm7ZPs136zds7axDPJ2LCGQtSi8B2AN",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "-309830980"},
 		},
 		{
-			Address: common.HexToAddress("2cac1adea150210703ba75ed097ddfe24e14f213"),
+			Address: "EME7Q5zpWQpNMkwA4HiSConcvqxmDDEQix",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "ggg"},
 		},
 		{
-			Address: common.HexToAddress("8bda78331c916a08481428e4b07c96d3e916d165"),
+			Address: "EVuP8n4NsUrCU834G4sPZhrK8956kWdy4E",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "zzzzzz-the-very-last-one.keyXXX"},
 		},
 		{
-			Address: common.HexToAddress("d49ff4eeb0b2686ed89c0fc0f2b6ea533ddbbd5e"),
+			Address: "EcYANF4cundMHHr519f2T2LEAT3vcMZp8S",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "SOMETHING.key"},
 		},
 		{
-			Address: common.HexToAddress("7ef5a6135f1fd6a02593eedc869c6d41d934aef8"),
-			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "UTC--2016-03-22T12-57-55.920751759Z--7ef5a6135f1fd6a02593eedc869c6d41d934aef8"},
+			Address: "EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG",
+			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "UTC--2016-03-22T12-57-55.920751759Z--EUjCujBMGzMuzdu6SChYq3gFrKrHVZXnZG"},
 		},
 		{
-			Address: common.HexToAddress("f466859ead1932d743d622cb74fc058882e8648a"),
+			Address: "EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "aaa"},
 		},
 		{
-			Address: common.HexToAddress("289d485d9771714cce91d3393d764e1311907acc"),
+			Address: "ELrewT2HwDPKCFbAW2A2ttbKnFwFZNfKXp",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: "zzz"},
 		},
+	}
+	accs := make([]accounts.Account, len(accinfos))
+	for index, a := range accinfos {
+		addr, _ := common.EvryAddressStringToAddressCheck(a.Address)
+		accs[index] = accounts.Account{addr, a.URL}
 	}
 	for _, a := range accs {
 		cache.add(a)
@@ -195,15 +206,18 @@ func TestCacheAddDeleteOrder(t *testing.T) {
 			t.Errorf("expected hasAccount(%x) to return true", a.Address)
 		}
 	}
-	if cache.hasAddress(common.HexToAddress("fd9bd350f08ee3c0c19b85a8e16114a11a60aa4e")) {
-		t.Errorf("expected hasAccount(%x) to return false", common.HexToAddress("fd9bd350f08ee3c0c19b85a8e16114a11a60aa4e"))
+
+	addressTem, _ := common.EvryAddressStringToAddressCheck("EgGs84QsSHPpnZhECxqXZwvqg2G8Z1B5xx")
+
+	if cache.hasAddress(addressTem) {
+		t.Errorf("expected EgGs84QsSHPpnZhECxqXZwvqg2G8Z1B5xx to return false")
 	}
 
 	// Delete a few keys from the cache.
 	for i := 0; i < len(accs); i += 2 {
 		cache.delete(wantAccounts[i])
 	}
-	cache.delete(accounts.Account{Address: common.HexToAddress("fd9bd350f08ee3c0c19b85a8e16114a11a60aa4e"), URL: accounts.URL{Scheme: KeyStoreScheme, Path: "something"}})
+	cache.delete(accounts.Account{Address: addressTem, URL: accounts.URL{Scheme: KeyStoreScheme, Path: "something"}})
 
 	// Check content again after deletion.
 	wantAccountsAfterDelete := []accounts.Account{
@@ -229,31 +243,41 @@ func TestCacheFind(t *testing.T) {
 	dir := filepath.Join("testdata", "dir")
 	cache, _ := newAccountCache(dir)
 	cache.watcher.running = true // prevent unexpected reloads
-
-	accs := []accounts.Account{
+	accinfos := []struct {
+		Address string
+		URL     accounts.URL
+	}{
 		{
-			Address: common.HexToAddress("095e7baea6a6c7c4c2dfeb977efac326af552d87"),
+			Address: "EJ1Sm7ZPs136zds7axDPJ2LCGQtSi8B2AN",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(dir, "a.key")},
 		},
 		{
-			Address: common.HexToAddress("2cac1adea150210703ba75ed097ddfe24e14f213"),
+			Address: "EME7Q5zpWQpNMkwA4HiSConcvqxmDDEQix",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(dir, "b.key")},
 		},
 		{
-			Address: common.HexToAddress("d49ff4eeb0b2686ed89c0fc0f2b6ea533ddbbd5e"),
+			Address: "EcYANF4cundMHHr519f2T2LEAT3vcMZp8S",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(dir, "c.key")},
 		},
 		{
-			Address: common.HexToAddress("d49ff4eeb0b2686ed89c0fc0f2b6ea533ddbbd5e"),
+			Address: "EcYANF4cundMHHr519f2T2LEAT3vcMZp8S",
 			URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(dir, "c2.key")},
 		},
 	}
+
+	accs := make([]accounts.Account, len(accinfos))
+	for index, a := range accinfos {
+		addr, _ := common.EvryAddressStringToAddressCheck(a.Address)
+		accs[index] = accounts.Account{addr, a.URL}
+	}
+
 	for _, a := range accs {
 		cache.add(a)
 	}
 
+	addrTem, _ := common.EvryAddressStringToAddressCheck("EfSBBjvr9A4L8W8GTyEbhNrKYLbgSorRzB")
 	nomatchAccount := accounts.Account{
-		Address: common.HexToAddress("f466859ead1932d743d622cb74fc058882e8648a"),
+		Address: addrTem,
 		URL:     accounts.URL{Scheme: KeyStoreScheme, Path: filepath.Join(dir, "something")},
 	}
 	tests := []struct {

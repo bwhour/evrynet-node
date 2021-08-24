@@ -23,24 +23,31 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Evrynetlabs/evrynet-node/common"
+	"github.com/Evrynetlabs/evrynet-node/common/hexutil"
 	"github.com/Evrynetlabs/evrynet-node/crypto"
+	"github.com/Evrynetlabs/evrynet-node/params"
 	"github.com/Evrynetlabs/evrynet-node/rlp"
 )
 
 // The values in those tests are from the Transaction Tests
 // at github.com/ethereum/tests.
 var (
+	a, _    = common.EvryAddressStringToAddressCheck("EJ1Sm7ZPs136zds7axDPJ2LCGQtSi8B2AN")
+	b, _    = common.EvryAddressStringToAddressCheck("Ea3jXjtJ3BqZneXsUKFhENkHDVT9y3TT1t")
 	emptyTx = NewTransaction(
 		0,
-		common.HexToAddress("095e7baea6a6c7c4c2dfeb977efac326af552d87"),
+		a,
 		big.NewInt(0), 0, big.NewInt(0),
 		nil,
 	)
 
 	rightvrsTx, _ = NewTransaction(
 		3,
-		common.HexToAddress("b94f5374fce5edbc8e2a8697c15331677e6ebf0b"),
+		b,
 		big.NewInt(10),
 		2000,
 		big.NewInt(1),
@@ -49,7 +56,27 @@ var (
 		HomesteadSigner{},
 		common.Hex2Bytes("98ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4a8887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a301"),
 	)
+
+	testKey, _ = crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
+	testAddr   = crypto.PubkeyToAddress(testKey.PublicKey)
+
+	testKey2, _ = crypto.HexToECDSA("ce900e4057ef7253ce737dccf3979ec4e74a19d595e8cc30c6c5ea92dfdd37f1")
+	testAddr2   = crypto.PubkeyToAddress(testKey2.PublicKey)
 )
+
+func TestTransactionCompatibility(t *testing.T) {
+	unsignedEtherHashString := "0x32d0ec31372e18e22e4af25a00926e344c16473978dce150112a89d0bdf5795a"
+	signedEthereHashString := "0x4aba6ccfa807932610b108dcb0f0c5491781bfb0d408e9909a967c6793a9c9ed"
+
+	to, _ := common.EvryAddressStringToAddressCheck("EJ1Sm7ZPs136zds7axDPJ2LCGQtSi8B2AN")
+	evrTx := NewTransaction(0, to, big.NewInt(1000), 0, big.NewInt(100), common.FromHex("123"))
+	//unsigned version should be hashed to the same hash
+	assert.Equal(t, evrTx.Hash().String(), unsignedEtherHashString)
+
+	evrSignedTx := signTx(t, evrTx)
+	//signed Tx should be hashed to the same hash
+	assert.Equal(t, evrSignedTx.Hash().String(), signedEthereHashString)
+}
 
 func TestTransactionSigHash(t *testing.T) {
 	var homestead HomesteadSigner
@@ -66,7 +93,7 @@ func TestTransactionEncode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("encode error: %v", err)
 	}
-	should := common.FromHex("f86603018207d094b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a82554480801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3808080")
+	should := common.FromHex("f86103018207d094b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a8255441ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3")
 	if !bytes.Equal(txb, should) {
 		t.Errorf("encoded RLP mismatch, got %x", txb)
 	}
@@ -221,6 +248,116 @@ func TestTransactionJSON(t *testing.T) {
 		}
 		if tx.ChainId().Cmp(parsedTx.ChainId()) != 0 {
 			t.Errorf("invalid chain id, want %d, got %d", tx.ChainId(), parsedTx.ChainId())
+		}
+	}
+}
+
+func TestTransaction_AsMessage(t *testing.T) {
+	var (
+		chainID         = params.AllEthashProtocolChanges.ChainID
+		err             error
+		payload         = "0x608060405260d0806100126000396000f30060806040526004361060525763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416633fb5c1cb811460545780638381f58a14605d578063f2c9ecd8146081575b005b60526004356093565b348015606857600080fd5b50606f6098565b60408051918252519081900360200190f35b348015608c57600080fd5b50606f609e565b600055565b60005481565b600054905600a165627a7a723058209573e4f95d10c1e123e905d720655593ca5220830db660f0641f3175c1cdb86e0029"
+		contractAddr, _ = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8hGraaK")
+		to1, _          = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeWdYvGRyE")
+		to2, _          = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeWdfucv31")
+		signer          = NewEIP155Signer(chainID)
+	)
+	tx := NewTransaction(uint64(0), to1, big.NewInt(100), 21000, big.NewInt(params.GasPriceConfig), nil)
+	tx, err = SignTx(tx, signer, testKey)
+	require.NoError(t, err)
+
+	txWithProvider := NewTransaction(uint64(0), to2, big.NewInt(1), 21000, big.NewInt(params.GasPriceConfig), nil)
+	txWithProvider, err = SignTx(txWithProvider, signer, testKey2)
+	require.NoError(t, err)
+	txWithProvider, err = ProviderSignTx(txWithProvider, signer, testKey)
+	require.NoError(t, err)
+
+	data := hexutil.MustDecode(payload)
+	creationContractTx := NewContractCreation(uint64(1), big.NewInt(0), 1000000, big.NewInt(params.GasPriceConfig), data)
+	creationContractTx, err = SignTx(creationContractTx, signer, testKey)
+	require.NoError(t, err)
+
+	invalidCreationContractTx, err := ProviderSignTx(creationContractTx, signer, testKey2)
+	require.NoError(t, err)
+
+	opts := CreateAccountOption{
+		OwnerAddress:    &testAddr2,
+		ProviderAddress: &testAddr2,
+	}
+	creationEnterpriseContractTx := NewContractCreation(uint64(1), big.NewInt(0), 1000000,
+		big.NewInt(params.GasPriceConfig), data, opts)
+	creationEnterpriseContractTx, err = SignTx(creationEnterpriseContractTx, signer, testKey)
+	require.NoError(t, err)
+
+	addProviderTx, err := NewModifyProvidersTransaction(uint64(2), contractAddr, 1000000,
+		big.NewInt(params.GasPriceConfig), testAddr2, true)
+	addProviderTx, err = SignTx(addProviderTx, signer, testKey)
+	require.NoError(t, err)
+
+	invalidAddProviderTx, err := NewModifyProvidersTransaction(uint64(2), contractAddr, 1000000,
+		big.NewInt(params.GasPriceConfig), testAddr2, true)
+	require.NoError(t, err)
+	invalidAddProviderTx, err = SignTx(invalidAddProviderTx, signer, testKey)
+	require.NoError(t, err)
+	invalidAddProviderTx, err = ProviderSignTx(invalidAddProviderTx, signer, testKey2)
+	require.NoError(t, err)
+
+	var testCases = []struct {
+		tx                      *Transaction
+		expectedErr             error
+		expectedFromAddress     common.Address
+		expectedGasPayerAddress common.Address
+		assertFn                func(msg Message)
+	}{
+		{
+			tx:                      tx,
+			expectedErr:             nil,
+			expectedFromAddress:     testAddr,
+			expectedGasPayerAddress: testAddr,
+		}, {
+			tx:                      txWithProvider,
+			expectedErr:             nil,
+			expectedFromAddress:     testAddr2,
+			expectedGasPayerAddress: testAddr,
+		}, {
+			tx:                      creationContractTx,
+			expectedErr:             nil,
+			expectedFromAddress:     testAddr,
+			expectedGasPayerAddress: testAddr,
+		}, {
+			tx:          invalidCreationContractTx,
+			expectedErr: ErrRedundantProviderSignature,
+		}, {
+			tx:                      creationEnterpriseContractTx,
+			expectedErr:             nil,
+			expectedFromAddress:     testAddr,
+			expectedGasPayerAddress: testAddr,
+		}, {
+			tx:                      addProviderTx,
+			expectedErr:             nil,
+			expectedFromAddress:     testAddr,
+			expectedGasPayerAddress: testAddr,
+			assertFn: func(msg Message) {
+				require.Equal(t, *msg.to, contractAddr)
+				require.Equal(t, msg.txType, AddProviderTxType)
+				extraData, ok := msg.extraData.(ModifyProvidersMsg)
+				require.True(t, ok)
+				require.Equal(t, extraData.Provider, testAddr2)
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		msg, err := testCase.tx.AsMessage(signer)
+		if testCase.expectedErr != nil {
+			require.Error(t, err, testCase.expectedErr)
+			continue
+		}
+		require.NoError(t, err)
+		require.Equal(t, msg.From(), testCase.expectedFromAddress, "unexpected from address")
+		require.Equal(t, msg.GasPayer(), testCase.expectedGasPayerAddress, "unexpected gas payer address")
+		if testCase.assertFn != nil {
+			testCase.assertFn(msg)
 		}
 	}
 }

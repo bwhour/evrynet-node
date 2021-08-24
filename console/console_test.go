@@ -37,7 +37,7 @@ import (
 
 const (
 	testInstance = "console-tester"
-	testAddress  = "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
+	testAddress  = "EVNYzXvbj9eHNM3Q35WaytXaeSqK8W1Jhd"
 )
 
 // hookedPrompter implements UserPrompter to simulate use input via channels.
@@ -96,10 +96,11 @@ func newTester(t *testing.T, confOverride func(*evr.Config)) *tester {
 	if err != nil {
 		t.Fatalf("failed to create node: %v", err)
 	}
+	etherBase, _ := common.EvryAddressStringToAddressCheck(testAddress)
 	ethConf := &evr.Config{
 		Genesis: core.DeveloperGenesisBlock(15, common.Address{}),
 		Miner: miner.Config{
-			Etherbase: common.HexToAddress(testAddress),
+			Etherbase: etherBase,
 		},
 		Ethash: ethash.Config{
 			PowMode: ethash.ModeTest,
@@ -111,6 +112,10 @@ func newTester(t *testing.T, confOverride func(*evr.Config)) *tester {
 	if err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) { return evr.New(ctx, ethConf) }); err != nil {
 		t.Fatalf("failed to register Evrynet protocol: %v", err)
 	}
+	// Add p2pServerInitDone
+	go func() {
+		stack.P2PServerInitDone <- struct{}{}
+	}()
 	// Start the node and assemble the JavaScript console around it
 	if err = stack.Start(); err != nil {
 		t.Fatalf("failed to start test stack: %v", err)

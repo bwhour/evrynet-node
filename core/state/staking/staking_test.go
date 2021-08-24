@@ -36,17 +36,20 @@ func TestStateDBStakingCaller_GetValidators(t *testing.T) {
 
 func testGetValidators(t *testing.T, indexCfg *staking.IndexConfigs) {
 	var (
+		a, _       = common.EvryAddressStringToAddressCheck("EQzeFSroGjB4xodbMYP1qydXeWYgypGSJe")
+		b, _       = common.EvryAddressStringToAddressCheck("EWmMyKETQCsTYEC3W51dZ3bpUWvn3XtrwG")
+		c, _       = common.EvryAddressStringToAddressCheck("ENDA7pzFPhjW1FKiXSKXkGrUPxvPTxBBCQ")
 		candidates = []common.Address{
-			common.HexToAddress("0x560089aB68dc224b250f9588b3DB540D87A66b7a"),
-			common.HexToAddress("0x954e4BF2C68F13D97C45db0e02645D145dB6911f"),
+			a,
+			b,
 		}
 		epoch             = big.NewInt(300000)
 		startBlock        = common.Big0
 		maxValidatorSize  = big.NewInt(100)
 		minValidatorStake = big.NewInt(20)
 		minVoteCap        = big.NewInt(10)
-		adminAddr         = common.HexToAddress("0x560089aB68dc224b250f9588b3DB540D87A66b7a")
-		newCandidate      = common.HexToAddress("0x377615c604BA7639F37dFd62dC1909357a542DAB")
+		adminAddr         = a
+		newCandidate      = c
 	)
 
 	privateKey, err := crypto.HexToECDSA(privateKeyHex)
@@ -115,7 +118,7 @@ func testGetValidators(t *testing.T, indexCfg *staking.IndexConfigs) {
 	require.NoError(t, err)
 	require.Equal(t, 3, len(validators))
 	for _, val := range validators {
-		fmt.Println(val.Hex())
+		fmt.Println(common.AddressToEvryAddressString(val))
 	}
 }
 
@@ -129,17 +132,20 @@ func TestStateDBStakingCaller_GetValidatorsData(t *testing.T) {
 
 func testGetValidatorsData(t *testing.T, indexCfg *staking.IndexConfigs) {
 	var (
+		a, _       = common.EvryAddressStringToAddressCheck("EQzeFSroGjB4xodbMYP1qydXeWYgypGSJe")
+		b, _       = common.EvryAddressStringToAddressCheck("EWmMyKETQCsTYEC3W51dZ3bpUWvn3XtrwG")
+		c, _       = common.EvryAddressStringToAddressCheck("ENDA7pzFPhjW1FKiXSKXkGrUPxvPTxBBCQ")
 		candidates = []common.Address{
-			common.HexToAddress("0x560089aB68dc224b250f9588b3DB540D87A66b7a"),
-			common.HexToAddress("0x954e4BF2C68F13D97C45db0e02645D145dB6911f"),
+			a,
+			b,
 		}
 		epoch             = big.NewInt(300000)
 		startBlock        = common.Big0
 		maxValidatorSize  = big.NewInt(100)
 		minValidatorStake = big.NewInt(20)
 		minVoteCap        = big.NewInt(10)
-		adminAddr         = common.HexToAddress("0x560089aB68dc224b250f9588b3DB540D87A66b7a")
-		newCandidate      = common.HexToAddress("0x377615c604BA7639F37dFd62dC1909357a542DAB")
+		adminAddr         = a
+		newCandidate      = c
 	)
 
 	privateKey, err := crypto.HexToECDSA(privateKeyHex)

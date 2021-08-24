@@ -45,7 +45,7 @@
 			// Assemble the internal call report and store for completion
 			var call = {
 				type:    op,
-				from:    toHex(log.contract.getAddress()),
+				from:    toEvrAddr(log.contract.getAddress()),
 				input:   toHex(log.memory.slice(inOff, inEnd)),
 				gasIn:   log.getGas(),
 				gasCost: log.getCost(),
@@ -79,8 +79,8 @@
 			// Assemble the internal call report and store for completion
 			var call = {
 				type:    op,
-				from:    toHex(log.contract.getAddress()),
-				to:      toHex(to),
+				from:    toEvrAddr(log.contract.getAddress()),
+				to:      toEvrAddr(to),
 				input:   toHex(log.memory.slice(inOff, inEnd)),
 				gasIn:   log.getGas(),
 				gasCost: log.getCost(),
@@ -186,13 +186,14 @@
 		this.callstack.push(call);
 	},
 
+
 	// result is invoked when all the opcodes have been iterated over and returns
 	// the final result of the tracing.
 	result: function(ctx, db) {
 		var result = {
 			type:    ctx.type,
-			from:    toHex(ctx.from),
-			to:      toHex(ctx.to),
+			from:    toEvrAddr(ctx.from),
+			to:      toEvrAddr(ctx.to),
 			value:   '0x' + ctx.value.toString(16),
 			gas:     '0x' + bigInt(ctx.gas).toString(16),
 			gasUsed: '0x' + bigInt(ctx.gasUsed).toString(16),

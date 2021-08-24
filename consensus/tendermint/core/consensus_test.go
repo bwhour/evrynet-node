@@ -27,11 +27,14 @@ func TestFinalizeBlock(t *testing.T) {
 	var (
 		nodePrivateKey, _ = crypto.HexToECDSA("ce900e4057ef7253ce737dccf3979ec4e74a19d595e8cc30c6c5ea92dfdd37f1")
 		nodeAddr          = crypto.PubkeyToAddress(nodePrivateKey.PublicKey)
+		a, _              = common.EvryAddressStringToAddressCheck("EPXt4N4aPgV4BEKLtYJgz2NdiAHfa7c2ao")
+		b, _              = common.EvryAddressStringToAddressCheck("ERXpWm2MrviVU2KjGMgq1xUQYLie2zUfkK")
+		c, _              = common.EvryAddressStringToAddressCheck("EWmMyKETQCsTYEC3W51dZ3bpUWvn3XtrwG")
 		validators        = []common.Address{
-			common.HexToAddress("0x45F8B547A7f16730c0C8961A21b56c31d84DdB49"),
+			a,
 			nodeAddr,
-			common.HexToAddress("0x5be60024b3b7EF2f6e4db97641e8942b85a5124e"),
-			common.HexToAddress("0x954e4BF2C68F13D97C45db0e02645D145dB6911f"),
+			b,
+			c,
 		}
 		genesisHeader = tests_utils.MakeGenesisHeader(validators)
 	)
@@ -133,7 +136,7 @@ func TestFinalizeBlock(t *testing.T) {
 					Address: validators[i],
 				}
 
-				assert.Equal(t, validators[i].Hex(), core.valSet.GetByIndex(int64(i)).String(), "The order voting must be the same")
+				assert.Equal(t, validators[i].String(), core.valSet.GetByIndex(int64(i)).String(), "The order voting must be the same")
 				switch tc.validatorVotes[i] {
 				case Block1:
 					ok, err := newMsgSet.AddVote(msg,

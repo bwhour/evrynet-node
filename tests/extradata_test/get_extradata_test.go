@@ -41,9 +41,9 @@ func TestGetExtraData(t *testing.T) {
 			assert.NotNil(t, extra)
 			assert.NotNil(t, extra.BlockProposer)
 			assert.NotEqual(t, common.Address{}, extra.BlockProposer)
-			log.Printf("proposer is %s", extra.BlockProposer.Hex())
+			log.Printf("proposer is %s", extra.BlockProposer.String())
 			for i, signer := range extra.CommitSigners {
-				log.Printf("index %d signer %s", i, signer.Hex())
+				log.Printf("index %d signer %s", i, signer.String())
 			}
 			break
 		}

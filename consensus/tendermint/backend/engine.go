@@ -98,11 +98,17 @@ func (sb *Backend) Seal(chain consensus.ChainReader, block *types.Block, results
 	// miner won't be able to interrupt a sealing task
 	// a sealing task can only exist when core consensus agreed upon a block
 	go func(ch <-chan *types.Block) {
-		if bl, ok := <-ch; ok {
-			//this step is to stop other go routine wait for a block
-			sb.commitChs.closeAndRemoveCommitChannel(bl.Number().String())
-			log.Info("committing... returned block to miner", "block_hash", bl.Hash(), "number", bl.Number())
-			results <- bl
+		select {
+		case bl, ok := <-ch:
+			if ok {
+				//this step is to stop other go routine wait for a block
+				sb.commitChs.closeAndRemoveCommitChannel(bl.Number().String())
+				log.Info("committing... returned block to miner", "block_hash", bl.Hash(), "number", bl.Number())
+				results <- bl
+				return
+			}
+		case <-sb.closingBackgroundThreadsCh:
+			log.Trace("interrupt commit channel")
 			return
 		}
 	}(ch)
@@ -135,7 +141,12 @@ func (sb *Backend) tryStartCore() bool {
 	sb.coreStarted = true
 	// trigger dequeue msg loop
 	go func() {
-		sb.dequeueMsgTriggering <- struct{}{}
+		select {
+		case sb.dequeueMsgTriggering <- struct{}{}:
+		case <-sb.closingBackgroundThreadsCh:
+			log.Trace("interrupt trigger dequeue loop when starting core")
+			return
+		}
 	}()
 	return true
 }
@@ -202,7 +213,7 @@ func (sb *Backend) Stop() error {
 // block, which may be different from the header's coinbase if a consensus
 // engine is based on signatures.
 func (sb *Backend) Author(header *types.Header) (common.Address, error) {
-	return blockProposer(header)
+	return sb.blockProposer(header)
 }
 
 // VerifyHeader checks whether a header conforms to the consensus rules of a
@@ -502,18 +513,17 @@ func (sb *Backend) APIs(chain consensus.ChainReader) []rpc.API {
 	}}
 }
 
+// Close terminates any background threads maintained by the consensus engine.
 func (sb *Backend) Close() error {
-	log.Warn("Close: implement me")
-	//TODO: Research & Implement
+	close(sb.closingBackgroundThreadsCh)
+
 	return nil
 }
-
-// snapshot retrieves the authorization snapshot at a given point in time.
 
 // verifyProposalSeal checks proposal seal is signed by validator
 func (sb *Backend) verifyProposalSeal(header *types.Header, valSet tendermint.ValidatorSet) error {
 	// resolve the authorization key and check against signers
-	signer, err := blockProposer(header)
+	signer, err := sb.blockProposer(header)
 	if err != nil {
 		log.Error("proposal seal is invalid", "error", err)
 		return err
@@ -571,8 +581,12 @@ func (sb *Backend) verifyCommittedSeals(header *types.Header, valSet tendermint.
 }
 
 // blockProposer extracts the Evrynet account address from a signed header.
-func blockProposer(header *types.Header) (common.Address, error) {
-	//TODO: check if existed in the cached
+func (sb *Backend) blockProposer(header *types.Header) (common.Address, error) {
+	if value, known := sb.blockProposerCache.Get(header.Number.Uint64()); known {
+		if proposer, ok := value.(common.Address); ok {
+			return proposer, nil
+		}
+	}
 
 	// Retrieve the signature from the header extra-data
 	extra, err := types.ExtractTendermintExtra(header)
@@ -583,7 +597,8 @@ func blockProposer(header *types.Header) (common.Address, error) {
 	if err != nil {
 		return addr, err
 	}
-	//TODO: will be caching address
+
+	sb.blockProposerCache.Add(header.Number.Uint64(), addr)
 	return addr, nil
 }
 

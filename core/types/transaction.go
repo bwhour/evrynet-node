@@ -31,8 +31,26 @@ import (
 
 //go:generate gencodec -type txdata -field-override txdataMarshaling -out gen_tx_json.go
 
+type TransactionType uint
+
+const (
+	NormalTxType TransactionType = iota
+	AddProviderTxType
+	RemoveProviderTxType
+)
+
 var (
 	ErrInvalidSig = errors.New("invalid transaction v, r, s values")
+	// ErrRedundantProviderSignature is returned if the transaction create contract or modify provider but have a provider signature.
+	ErrRedundantProviderSignature = errors.New("redundant provider signature")
+	// ErrOwnerRequired is returned if the transaction to create contract with a provider but not contains an owner.
+	ErrOwnerRequired = errors.New("owner is required")
+	// ErrEmptyProvider is returned if provider is 0
+	ErrEmptyProvider = errors.New("provider is 0")
+	// ErrEmptyOwner is returned if owner is 0
+	ErrEmptyOwner = errors.New("owner is 0")
+	// ErrInvalidExtraDataType is returned if extra data type is invalid
+	ErrInvalidExtraDataType = errors.New("unsupported extra data type")
 )
 
 // CreateAccountOption contain extra parameter for Account creation
@@ -49,7 +67,8 @@ type Transaction struct {
 	from atomic.Value
 }
 
-type txdataNormal struct {
+//ethTxData is the original ethTxData format. It is kept for backward compatibility purpose.
+type ethTxData struct {
 	AccountNonce uint64          `json:"nonce"    gencodec:"required"`
 	Price        *big.Int        `json:"gasPrice" gencodec:"required"`
 	GasLimit     uint64          `json:"gas"      gencodec:"required"`
@@ -66,7 +85,7 @@ type txdataNormal struct {
 	Hash *common.Hash `json:"hash" rlp:"-"`
 }
 
-func (d txdataNormal) toTxData() txdata {
+func (d ethTxData) toTxData() txdata {
 	return txdata{
 		AccountNonce: d.AccountNonce,
 		Price:        d.Price,
@@ -90,17 +109,15 @@ type txdata struct {
 	Amount       *big.Int        `json:"value"    gencodec:"required"`
 	Payload      []byte          `json:"input"    gencodec:"required"`
 
-	//owner address
-	Owner *common.Address `json:"owner" rlp:"nil"`
-
-	// Provider address
+	// data to create enterprise contract
+	Owner    *common.Address `json:"owner" rlp:"nil"`
 	Provider *common.Address `json:"provider" rlp:"nil"`
-
+	// data to modify providers transaction
+	Extra []byte `json:"extraData" rlp:"nil"`
 	// Signature values
 	V *big.Int `json:"v" gencodec:"required"`
 	R *big.Int `json:"r" gencodec:"required"`
 	S *big.Int `json:"s" gencodec:"required"`
-
 	//Provider Signature values
 	PV *big.Int `json:"pv"       rlp:"nil"`
 	PR *big.Int `json:"pr"       rlp:"nil"`
@@ -108,6 +125,48 @@ type txdata struct {
 
 	// This is only used when marshaling to JSON.
 	Hash *common.Hash `json:"hash" rlp:"-"`
+}
+
+func (d txdata) toEthTxData() ethTxData {
+	return ethTxData{
+		AccountNonce: d.AccountNonce,
+		Price:        d.Price,
+		GasLimit:     d.GasLimit,
+		Recipient:    d.Recipient,
+		Amount:       d.Amount,
+		Payload:      d.Payload,
+		V:            d.V,
+		R:            d.R,
+		S:            d.S,
+	}
+}
+
+func (d txdata) isEthTxData() bool {
+	if d.Owner != nil {
+		return false
+	}
+	if d.Provider != nil {
+		return false
+	}
+	if (d.PR != nil) || (d.PS != nil) || (d.PV != nil) {
+		return false
+	}
+
+	if len(d.Extra) != 0 {
+		return false
+	}
+	return true
+}
+
+// TransactionExtraData is info about special transaction
+type TransactionExtraData struct {
+	Type TransactionType
+	Msg  []byte
+}
+
+// ModifyProvidersMsg is info about adding or removing provider for enterprise contract
+type ModifyProvidersMsg struct {
+	Provider common.Address
 }
 
 type txdataMarshaling struct {
@@ -119,15 +178,19 @@ type txdataMarshaling struct {
 	V            *hexutil.Big
 	R            *hexutil.Big
 	S            *hexutil.Big
+	PV           *hexutil.Big
+	PR           *hexutil.Big
+	PS           *hexutil.Big
+	Extra        hexutil.Bytes
 }
 
 func NewTransaction(nonce uint64, to common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, data []byte) *Transaction {
-	return newTransaction(nonce, &to, amount, gasLimit, gasPrice, data)
+	return newTransaction(nonce, &to, amount, gasLimit, gasPrice, data, nil)
 }
 
 // NewContractCreation create new instance of the tx with contract creation
 func NewContractCreation(nonce uint64, amount *big.Int, gasLimit uint64, gasPrice *big.Int, data []byte, opts ...CreateAccountOption) *Transaction {
-	tx := newTransaction(nonce, nil, amount, gasLimit, gasPrice, data)
+	tx := newTransaction(nonce, nil, amount, gasLimit, gasPrice, data, nil)
 	if len(opts) > 0 {
 		tx.data.Owner = opts[0].OwnerAddress
 		tx.data.Provider = opts[0].ProviderAddress
@@ -135,7 +198,26 @@ func NewContractCreation(nonce uint64, amount *big.Int, gasLimit uint64, gasPric
 	return tx
 }
 
-func newTransaction(nonce uint64, to *common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, data []byte) *Transaction {
+// NewModifyProvidersTransaction create a new transaction to add/remove provider
+func NewModifyProvidersTransaction(nonce uint64, to common.Address, gasLimit uint64, gasPrice *big.Int, provider common.Address, isAdd bool) (*Transaction, error) {
+	addProviderMsg := &ModifyProvidersMsg{Provider: provider}
+	msg, err := rlp.EncodeToBytes(addProviderMsg)
+	if err != nil {
+		return nil, err
+	}
+	txType := AddProviderTxType
+	if !isAdd {
+		txType = RemoveProviderTxType
+	}
+	extraData := &TransactionExtraData{Type: txType, Msg: msg}
+	extra, err := rlp.EncodeToBytes(extraData)
+	if err != nil {
+		return nil, err
+	}
+	return newTransaction(nonce, &to, big.NewInt(0), gasLimit, gasPrice, nil, extra), nil
+}
+
+func newTransaction(nonce uint64, to *common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, data []byte, extra []byte) *Transaction {
 	if len(data) > 0 {
 		data = common.CopyBytes(data)
 	}
@@ -149,6 +231,7 @@ func newTransaction(nonce uint64, to *common.Address, amount *big.Int, gasLimit 
 		V:            new(big.Int),
 		R:            new(big.Int),
 		S:            new(big.Int),
+		Extra:        extra,
 	}
 	if amount != nil {
 		d.Amount.Set(amount)
@@ -186,6 +269,11 @@ func isProtectedV(V *big.Int) bool {
 
 // EncodeRLP implements rlp.Encoder
 func (tx *Transaction) EncodeRLP(w io.Writer) error {
+	//if txdata doesn't involve with Evrynet fee scheme, encode it as Ethereum tx for backward compatibility
+	if tx.data.isEthTxData() {
+		d := tx.data.toEthTxData()
+		return rlp.Encode(w, &d)
+	}
 	return rlp.Encode(w, &tx.data)
 }
 
@@ -210,7 +298,7 @@ func (tx *Transaction) DecodeRLP(s *rlp.Stream) error {
 		return nil
 	}
 
-	var dataNormal txdataNormal
+	var dataNormal ethTxData
 	err = rlp.DecodeBytes(raw, &dataNormal)
 	if err == nil {
 		tx.data = dataNormal.toTxData()
@@ -256,6 +344,7 @@ func (tx *Transaction) UnmarshalJSON(input []byte) error {
 }
 
 func (tx *Transaction) Data() []byte       { return common.CopyBytes(tx.data.Payload) }
+func (tx *Transaction) ExtraData() []byte  { return common.CopyBytes(tx.data.Extra) }
 func (tx *Transaction) Gas() uint64        { return tx.data.GasLimit }
 func (tx *Transaction) GasPrice() *big.Int { return new(big.Int).Set(tx.data.Price) }
 func (tx *Transaction) Value() *big.Int    { return new(big.Int).Set(tx.data.Amount) }
@@ -299,6 +388,8 @@ func (tx *Transaction) Size() common.StorageSize {
 //
 // AsMessage requires a signer to derive the sender.
 //
+// AsMessage also validates the transaction fields
+//
 // XXX Rename message to something less arbitrary?
 func (tx *Transaction) AsMessage(s Signer) (Message, error) {
 	msg := Message{
@@ -323,14 +414,60 @@ func (tx *Transaction) AsMessage(s Signer) (Message, error) {
 		return msg, err
 	}
 
-	if provider != nil {
-		msg.gasPayer = *provider
-		return msg, nil
+	if tx.data.Recipient == nil { //valid contract creation params
+		if provider != nil {
+			return msg, ErrRedundantProviderSignature
+		}
+		emptyAddress := common.Address{}
+		if tx.Provider() != nil {
+			if *tx.data.Provider == emptyAddress {
+				return msg, ErrEmptyProvider
+			}
+			if tx.Owner() == nil {
+				return msg, ErrOwnerRequired
+			}
+			if *tx.data.Owner == emptyAddress {
+				return msg, ErrEmptyOwner
+			}
+		}
 	}
 
-	//Default: Sender will be gasPayer
-	msg.gasPayer = msg.from
+	if provider != nil {
+		msg.hasProviderSignature = true
+		msg.gasPayer = *provider
+	} else {
+		msg.gasPayer = msg.from
+	}
+
+	if len(tx.data.Extra) != 0 {
+		if provider != nil {
+			return msg, ErrRedundantProviderSignature
+		}
+		if msg.txType, msg.extraData, err = decodeTransactionExtraData(tx.data); err != nil {
+			return msg, err
+		}
+	} else {
+		msg.txType = NormalTxType
+		msg.extraData = nil
+	}
 	return msg, nil
+}
+
+func decodeTransactionExtraData(data txdata) (TransactionType, interface{}, error) {
+	var extraData TransactionExtraData
+	if err := rlp.DecodeBytes(data.Extra, &extraData); err != nil {
+		return NormalTxType, nil, err
+	}
+	switch extraData.Type {
+	case AddProviderTxType, RemoveProviderTxType:
+		var providerData ModifyProvidersMsg
+		if err := rlp.DecodeBytes(extraData.Msg, &providerData); err != nil {
+			return NormalTxType, nil, err
+		}
+		return extraData.Type, providerData, nil
+	default:
+		return extraData.Type, nil, ErrInvalidExtraDataType
+	}
 }
 
 // WithProviderSignature returns a new transaction with the given provider signature.
@@ -546,39 +683,52 @@ func (t *TransactionsByPriceAndNonce) Pop() {
 type Message struct {
 	to         *common.Address
 	from       common.Address
-	owner      *common.Address
-	provider   *common.Address
 	nonce      uint64
 	amount     *big.Int
 	gasLimit   uint64
 	gasPrice   *big.Int
 	data       []byte
 	checkNonce bool
-	gasPayer   common.Address
+
+	// enterprise contract creation params
+	owner    *common.Address
+	provider *common.Address
+	// enterprise contract interaction params
+	gasPayer             common.Address
+	hasProviderSignature bool
+	// special data params
+	txType    TransactionType
+	extraData interface{}
 }
 
+//TODO: add new message with gas payer so user can use eth_call with enterprise contract
 func NewMessage(from common.Address, to *common.Address, nonce uint64, amount *big.Int, gasLimit uint64, gasPrice *big.Int, data []byte, checkNonce bool) Message {
 	return Message{
-		from:       from,
-		to:         to,
-		nonce:      nonce,
-		amount:     amount,
-		gasLimit:   gasLimit,
-		gasPrice:   gasPrice,
-		data:       data,
-		checkNonce: checkNonce,
-		gasPayer:   from,
+		from:                 from,
+		to:                   to,
+		nonce:                nonce,
+		amount:               amount,
+		gasLimit:             gasLimit,
+		gasPrice:             gasPrice,
+		data:                 data,
+		checkNonce:           checkNonce,
+		gasPayer:             from,
+		txType:               NormalTxType,
+		hasProviderSignature: false,
 	}
 }
 
-func (m Message) GasPayer() common.Address  { return m.gasPayer }
-func (m Message) From() common.Address      { return m.from }
-func (m Message) To() *common.Address       { return m.to }
-func (m Message) Owner() *common.Address    { return m.owner }
-func (m Message) Provider() *common.Address { return m.provider }
-func (m Message) GasPrice() *big.Int        { return m.gasPrice }
-func (m Message) Value() *big.Int           { return m.amount }
-func (m Message) Gas() uint64               { return m.gasLimit }
-func (m Message) Nonce() uint64             { return m.nonce }
-func (m Message) Data() []byte              { return m.data }
-func (m Message) CheckNonce() bool          { return m.checkNonce }
+func (m Message) GasPayer() common.Address   { return m.gasPayer }
+func (m Message) From() common.Address       { return m.from }
+func (m Message) To() *common.Address        { return m.to }
+func (m Message) Owner() *common.Address     { return m.owner }
+func (m Message) Provider() *common.Address  { return m.provider }
+func (m Message) GasPrice() *big.Int         { return m.gasPrice }
+func (m Message) Value() *big.Int            { return m.amount }
+func (m Message) Gas() uint64                { return m.gasLimit }
+func (m Message) Nonce() uint64              { return m.nonce }
+func (m Message) Data() []byte               { return m.data }
+func (m Message) CheckNonce() bool           { return m.checkNonce }
+func (m Message) TxType() TransactionType    { return m.txType }
+func (m Message) ExtraData() interface{}     { return m.extraData }
+func (m Message) HasProviderSignature() bool { return m.hasProviderSignature }

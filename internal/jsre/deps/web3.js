@@ -2087,6 +2087,17 @@ var fromDecimal = function (value) {
 };
 
 /**
+ * Just return input; used in tracer, will override in go
+ *
+ * @method toEvrAddr
+ * @param {string}
+ * @return {string}
+ */
+var toEvrAddr = function (val) {
+  return val;
+};
+
+/**
  * Auto converts any given value into it's hex representation.
  *
  * And even stringifys objects before.
@@ -2444,6 +2455,7 @@ module.exports = {
     padLeft: padLeft,
     padRight: padRight,
     toHex: toHex,
+    toEvrAddr:toEvrAddr,
     toDecimal: toDecimal,
     fromDecimal: fromDecimal,
     toUtf8: toUtf8,
@@ -3919,15 +3931,16 @@ var outputPostFormatter = function(post){
 };
 
 var inputAddressFormatter = function (address) {
-    var iban = new Iban(address);
-    if (iban.isValid() && iban.isDirect()) {
-        return '0x' + iban.address();
-    } else if (utils.isStrictAddress(address)) {
-        return address;
-    } else if (utils.isAddress(address)) {
-        return '0x' + address;
-    }
-    throw new Error('invalid address');
+    return address;
+    // var iban = new Iban(address);
+    // if (iban.isValid() && iban.isDirect()) {
+    //     return '0x' + iban.address();
+    // } else if (utils.isStrictAddress(address)) {
+    //     return address;
+    // } else if (utils.isAddress(address)) {
+    //     return '0x' + address;
+    // }
+    // throw new Error('invalid address');
 };
 
 

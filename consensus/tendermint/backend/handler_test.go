@@ -166,3 +166,37 @@ func TestBackend_StartStop(t *testing.T) {
 	require.NoError(t, be.Stop())
 	close(done)
 }
+
+// test dequeue message loop does not work when close backend
+func TestBackend_StartClose(t *testing.T) {
+	log.Root().SetHandler(log.LvlFilterHandler(log.LvlTrace, log.StreamHandler(os.Stderr, log.TerminalFormat(false))))
+
+	be, blockchain, _, err := createBlockchainAndBackendFromGenesis(FixedValidators)
+	require.NoError(t, err)
+	mockCore := NewMockCore(be)
+	be.core = mockCore
+	done := make(chan struct{})
+	go func() {
+		select {
+		case <-time.After(time.Second * 10):
+			panic("timeout")
+		case <-done:
+			return
+		}
+	}()
+
+	require.NoError(t, be.Start(blockchain, blockchain.CurrentBlock, nil))
+	require.Error(t, be.Start(blockchain, blockchain.CurrentBlock, nil))
+	require.NoError(t, be.Close())
+
+	// Do not log out any "replay msg started" when backend receive message
+	_, err = be.HandleMsg(common.Address{}, makeMsg(consensus.TendermintMsg, []byte("data1")))
+	require.NoError(t, err)
+
+	// Do not log out any "replay msg started" when backend receive message
+	_, err = be.HandleMsg(common.Address{}, makeMsg(consensus.TendermintMsg, []byte("data2")))
+	require.NoError(t, err)
+	time.Sleep(2 * time.Second)
+
+	close(done)
+}

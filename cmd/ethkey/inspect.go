@@ -23,6 +23,7 @@ import (
 
 	"github.com/Evrynetlabs/evrynet-node/accounts/keystore"
 	"github.com/Evrynetlabs/evrynet-node/cmd/utils"
+	"github.com/Evrynetlabs/evrynet-node/common"
 	"github.com/Evrynetlabs/evrynet-node/crypto"
 	"github.com/urfave/cli"
 )
@@ -69,7 +70,7 @@ make sure to use this feature with great caution!`,
 		// Output all relevant information we can retrieve.
 		showPrivate := ctx.Bool("private")
 		out := outputInspect{
-			Address: key.Address.Hex(),
+			Address: common.AddressToEvryAddressString(key.Address),
 			PublicKey: hex.EncodeToString(
 				crypto.FromECDSAPub(&key.PrivateKey.PublicKey)),
 		}

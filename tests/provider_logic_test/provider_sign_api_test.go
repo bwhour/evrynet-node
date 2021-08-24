@@ -25,8 +25,8 @@ func TestProviderSignTransaction(t *testing.T) {
 
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
-	senderAddr := common.HexToAddress(senderAddrStr)
-	providerAddr := common.HexToAddress(providerAddrStr)
+	senderAddr, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerAddrStr)
 	ethClient, err := evrclient.Dial(ethRPCEndpoint)
 	assert.NoError(t, err)
 	id, err := ethClient.ChainID(context.Background())
@@ -53,10 +53,10 @@ func TestProviderSignTransaction(t *testing.T) {
 
 func prepareNewContract(hasProvider bool) *common.Address {
 	var (
-		tx           *types.Transaction
-		providerAddr = common.HexToAddress(providerAddrStr)
-		ownerAddr    = common.HexToAddress(senderAddrStr)
-		sender       = common.HexToAddress(senderAddrStr)
+		tx              *types.Transaction
+		providerAddr, _ = common.EvryAddressStringToAddressCheck(providerAddrStr)
+		ownerAddr, _    = common.EvryAddressStringToAddressCheck(senderAddrStr)
+		sender, _       = common.EvryAddressStringToAddressCheck(senderAddrStr)
 	)
 
 	spk, err := crypto.HexToECDSA(senderPK)

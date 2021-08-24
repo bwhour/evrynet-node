@@ -23,6 +23,7 @@ import (
 	"github.com/Evrynetlabs/evrynet-node/accounts"
 	"github.com/Evrynetlabs/evrynet-node/accounts/keystore"
 	"github.com/Evrynetlabs/evrynet-node/cmd/utils"
+	"github.com/Evrynetlabs/evrynet-node/common"
 	"github.com/Evrynetlabs/evrynet-node/console"
 	"github.com/Evrynetlabs/evrynet-node/crypto"
 	"github.com/Evrynetlabs/evrynet-node/log"
@@ -197,7 +198,7 @@ func accountList(ctx *cli.Context) error {
 	var index int
 	for _, wallet := range stack.AccountManager().Wallets() {
 		for _, account := range wallet.Accounts() {
-			fmt.Printf("Account #%d: {%x} %s\n", index, account.Address, &account.URL)
+			fmt.Printf("Account #%d: {%s} %s\n", index, common.AddressToEvryAddressString(account.Address), &account.URL)
 			index++
 		}
 	}
@@ -215,11 +216,11 @@ func unlockAccount(ks *keystore.KeyStore, address string, i int, passwords []str
 		password := getPassPhrase(prompt, false, i, passwords)
 		err = ks.Unlock(account, password)
 		if err == nil {
-			log.Info("Unlocked account", "address", account.Address.Hex())
+			log.Info("Unlocked account", "address", account.Address.String())
 			return account, password
 		}
 		if err, ok := err.(*keystore.AmbiguousAddrError); ok {
-			log.Info("Unlocked account", "address", account.Address.Hex())
+			log.Info("Unlocked account", "address", account.Address.String())
 			return ambiguousAddrRecovery(ks, err, password), password
 		}
 		if err != keystore.ErrDecrypt {
@@ -264,7 +265,7 @@ func getPassPhrase(prompt string, confirmation bool, i int, passwords []string) 
 }
 
 func ambiguousAddrRecovery(ks *keystore.KeyStore, err *keystore.AmbiguousAddrError, auth string) accounts.Account {
-	fmt.Printf("Multiple key files exist for address %x:\n", err.Addr)
+	fmt.Printf("Multiple key files exist for address %s:\n", common.AddressToEvryAddressString(err.Addr))
 	for _, a := range err.Matches {
 		fmt.Println("  ", a.URL)
 	}
@@ -313,7 +314,7 @@ func accountCreate(ctx *cli.Context) error {
 		utils.Fatalf("Failed to create account: %v", err)
 	}
 	fmt.Printf("\nYour new key was generated\n\n")
-	fmt.Printf("Public address of the key:   %s\n", account.Address.Hex())
+	fmt.Printf("Public address of the key:   %s\n", common.AddressToEvryAddressString(account.Address))
 	fmt.Printf("Path of the secret key file: %s\n\n", account.URL.Path)
 	fmt.Printf("- You can share your public address with anyone. Others need it to interact with you.\n")
 	fmt.Printf("- You must NEVER share the secret key with anyone! The key controls access to your funds!\n")
@@ -359,7 +360,7 @@ func importWallet(ctx *cli.Context) error {
 	if err != nil {
 		utils.Fatalf("%v", err)
 	}
-	fmt.Printf("Address: {%x}\n", acct.Address)
+	fmt.Printf("Address: {%s}\n", common.AddressToEvryAddressString(acct.Address))
 	return nil
 }
 
@@ -380,6 +381,6 @@ func accountImport(ctx *cli.Context) error {
 	if err != nil {
 		utils.Fatalf("Could not create the account: %v", err)
 	}
-	fmt.Printf("Address: {%x}\n", acct.Address)
+	fmt.Printf("Address: {%s}\n", common.AddressToEvryAddressString(acct.Address))
 	return nil
 }

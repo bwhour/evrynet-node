@@ -465,7 +465,12 @@ func unlockAccounts(ctx *cli.Context, stack *node.Node) {
 	if stack.Config().P2P.PrivateKey == nil && ctx.GlobalBool(utils.NodeKeyFromKeystoreFlag.Name) {
 		hasUnlockedKey := false
 		for _, account := range unlocks {
-			if pk := ks.GetUnlockPk(common.HexToAddress(account)); pk != nil {
+			address, err := common.EvryAddressStringToAddressCheck(account)
+			if err != nil {
+				log.Warn("unlock account failed", "account", account, "error", err)
+				continue
+			}
+			if pk := ks.GetUnlockPk(address); pk != nil {
 				stack.Config().P2P.PrivateKey = pk
 				hasUnlockedKey = true
 			}

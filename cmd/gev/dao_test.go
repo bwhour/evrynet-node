@@ -31,7 +31,7 @@ import (
 // Genesis block for nodes which don't care about the DAO fork (i.e. not configured)
 var daoOldGenesis = `{
 	"alloc"      : {},
-	"coinbase"   : "0x0000000000000000000000000000000000000000",
+	"coinbase"   : "EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",
 	"difficulty" : "0x20000",
 	"extraData"  : "",
 	"gasLimit"   : "0x2fefd8",
@@ -45,7 +45,7 @@ var daoOldGenesis = `{
 // Genesis block for nodes which actively oppose the DAO fork
 var daoNoForkGenesis = `{
 	"alloc"      : {},
-	"coinbase"   : "0x0000000000000000000000000000000000000000",
+	"coinbase"   : "EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",
 	"difficulty" : "0x20000",
 	"extraData"  : "",
 	"gasLimit"   : "0x2fefd8",
@@ -62,7 +62,7 @@ var daoNoForkGenesis = `{
 // Genesis block for nodes which actively support the DAO fork
 var daoProForkGenesis = `{
 	"alloc"      : {},
-	"coinbase"   : "0x0000000000000000000000000000000000000000",
+	"coinbase"   : "EH9uVaqWRxHuzJbroqzX18yxmeW8XVJyV9",
 	"difficulty" : "0x20000",
 	"extraData"  : "",
 	"gasLimit"   : "0x2fefd8",

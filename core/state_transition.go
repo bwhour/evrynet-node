@@ -65,6 +65,7 @@ type StateTransition struct {
 type Message interface {
 	From() common.Address
 	GasPayer() common.Address
+	HasProviderSignature() bool
 	//FromFrontier() (common.Address, error)
 	To() *common.Address
 	Owner() *common.Address
@@ -77,6 +78,8 @@ type Message interface {
 	Nonce() uint64
 	CheckNonce() bool
 	Data() []byte
+	TxType() types.TransactionType
+	ExtraData() interface{}
 }
 
 // IntrinsicGas computes the 'intrinsic gas' for a message with the given data.
@@ -178,6 +181,7 @@ func (st *StateTransition) preCheck() error {
 			return ErrNonceTooLow
 		}
 	}
+	//TODO: this should check if the address from provider list
 	return st.buyGas()
 }
 
@@ -210,7 +214,8 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		// error.
 		vmerr error
 	)
-	if contractCreation {
+	switch {
+	case contractCreation:
 		var option types.CreateAccountOption
 		if msg.Owner() != nil {
 			option.OwnerAddress = msg.Owner()
@@ -219,7 +224,21 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 			option.ProviderAddress = msg.Provider()
 		}
 		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value, option)
-	} else {
+	case msg.TxType() == types.AddProviderTxType || msg.TxType() == types.RemoveProviderTxType:
+		var (
+			msgData types.ModifyProvidersMsg
+			ok      bool
+		)
+		if msgData, ok = st.msg.ExtraData().(types.ModifyProvidersMsg); !ok { // this should never to be happened
+			return nil, 0, false, errors.New("msg should be type ModifyProvidersMsg")
+		}
+		st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
+		if msg.TxType() == types.AddProviderTxType {
+			vmerr = st.state.AddProvider(st.to(), msg.From(), msgData.Provider)
+		} else {
+			vmerr = st.state.RemoveProvider(st.to(), msg.From(), msgData.Provider)
+		}
+	default:
 		// Increment the nonce for the next transaction
 		st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
 		ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)

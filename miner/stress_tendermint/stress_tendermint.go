@@ -378,7 +378,7 @@ func prepareNewContract(rpcEndpoint string, acc *ecdsa.PrivateKey, nonce uint64,
 
 	err = evrClient.SendTransaction(context.Background(), tx)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create SC from %s", accAddr.Hex())
+		return nil, errors.Wrapf(err, "failed to create SC from %s", accAddr.String())
 	}
 
 	// Wait to get SC address

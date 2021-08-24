@@ -32,7 +32,7 @@ const (
 
 var (
 	nodePKString           = "bb047e5940b6d83354d9432db7c449ac8fca2248008aaa7271369880f9f11cc1"
-	stakingScAddress       = common.HexToAddress("0x2D5Bd25EfA0aB97aaca4E888c5fbCB4866904E46")
+	stakingScAddress, _    = common.EvryAddressStringToAddressCheck("EMHju71XkmyxKJgaqf1QnzxdwGu627GEnN")
 	stakingSCValidatorKeys = []string{ // list privatekey for validators in genesis file
 		"ce900e4057ef7253ce737dccf3979ec4e74a19d595e8cc30c6c5ea92dfdd37f1",
 		"e74f3525fb69f193b51d33f4baf602c4572d81ede57907c61a62eaf9ed95374a",

@@ -131,6 +131,11 @@ type (
 		prev      bool
 		prevDirty bool
 	}
+
+	providersChange struct {
+		account *common.Address
+		prev    []common.Address
+	}
 )
 
 func (ch createObjectChange) revert(s *StateDB) {
@@ -162,7 +167,7 @@ func (ch suicideChange) dirtied() *common.Address {
 	return ch.account
 }
 
-var ripemd = common.HexToAddress("0000000000000000000000000000000000000003")
+var ripemd, _ = common.EvryAddressStringToAddressCheck("EH9uVaqWRxHuzJbroqzX18yxmeW8pZptqN")
 
 func (ch touchChange) revert(s *StateDB) {
 }
@@ -231,4 +236,12 @@ func (ch addPreimageChange) revert(s *StateDB) {
 
 func (ch addPreimageChange) dirtied() *common.Address {
 	return nil
+}
+
+func (ch providersChange) revert(s *StateDB) {
+	s.getStateObject(*ch.account).setProvider(ch.prev)
+}
+
+func (ch providersChange) dirtied() *common.Address {
+	return ch.account
 }

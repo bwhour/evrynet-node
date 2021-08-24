@@ -26,8 +26,8 @@ To run these test, please deploy your own account/ contract and extract privatek
 // assure the correctness of the program.
 func TestInteractToEnterpriseSmartContractWithValidProviderSignatureFromAccountWithoutGas(t *testing.T) {
 	var (
-		senderAddr   = common.HexToAddress(senderWithoutGasAddrStr)
-		contractAddr = prepareNewContract(true)
+		senderAddr, _ = common.EvryAddressStringToAddressCheck(senderWithoutGasAddrStr)
+		contractAddr  = prepareNewContract(true)
 	)
 
 	spk, err := crypto.HexToECDSA(senderWithoutGasPK)
@@ -51,14 +51,16 @@ func TestInteractToEnterpriseSmartContractWithValidProviderSignatureFromAccountW
 	transaction, err = types.ProviderSignTx(transaction, signer, ppk)
 	assert.NoError(t, err)
 	require.NoError(t, ethClient.SendTransaction(context.Background(), transaction))
-	assertTransactionSuccess(t, ethClient, transaction.Hash(), false, common.HexToAddress(providerAddrStr))
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerAddrStr)
+	assertTransactionSuccess(t, ethClient, transaction.Hash(), false, providerAddr)
 }
 
 // Interact with a payable function and sending some native token along with transaction
 // Please make sure the sender does not have any funds
 // expected to get revert as sender's balance is not enough for transaction amount
 func TestInteractWithAmountToEnterpriseSmartContractWithValidProviderSignatureFromAccountWithoutGas(t *testing.T) {
-	senderAddr := common.HexToAddress(senderWithoutGasAddrStr)
+	senderAddr, _ := common.EvryAddressStringToAddressCheck(senderWithoutGasAddrStr)
+
 	contractAddr := prepareNewContract(false)
 	assert.NotNil(t, contractAddr)
 
@@ -90,7 +92,7 @@ func TestInteractWithAmountToEnterpriseSmartContractWithValidProviderSignatureFr
 // Please make sure sender has enough balance to cover transaction amount
 // expected to get passed as sender's balance is enough for transaction amount
 func TestInteractWithAmountToEnterpriseSmartContractWithValidProviderSignatureFromAccountWithEnoughBalance(t *testing.T) {
-	senderAddr := common.HexToAddress(senderAddrStr)
+	senderAddr, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
 	contractAddr := prepareNewContract(true)
 	assert.NotNil(t, contractAddr)
 
@@ -116,7 +118,8 @@ func TestInteractWithAmountToEnterpriseSmartContractWithValidProviderSignatureFr
 	assert.NoError(t, err)
 
 	require.NoError(t, ethClient.SendTransaction(context.Background(), transaction))
-	assertTransactionSuccess(t, ethClient, transaction.Hash(), false, common.HexToAddress(providerAddrStr))
+	providerAddr, _ := common.EvryAddressStringToAddressCheck(providerAddrStr)
+	assertTransactionSuccess(t, ethClient, transaction.Hash(), false, providerAddr)
 }
 
 // Interact with enterprise contract where provider has zero gas
@@ -124,8 +127,9 @@ func TestInteractWithAmountToEnterpriseSmartContractWithValidProviderSignatureFr
 // Expected to get failure as provider's balance is not enough for transaction fee
 // Please check error message
 func TestInteractEnterpriseSmartContractWithValidProviderSignatureWithoutGas(t *testing.T) {
-	senderAddr := common.HexToAddress(senderAddrStr)
-	contractAddr := common.HexToAddress(contractProviderWithoutGas)
+	senderAddr, _ := common.EvryAddressStringToAddressCheck(senderAddrStr)
+	contractAddr, _ := common.EvryAddressStringToAddressCheck(contractProviderWithoutGas)
+
 	spk, err := crypto.HexToECDSA(senderPK)
 	assert.NoError(t, err)
 

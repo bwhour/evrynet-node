@@ -174,9 +174,9 @@ The bellow example explains how to deploy 3 nodes manually.
     > 0
     
     Which accounts are validators? (mandatory at least one)
-    > 0x560089aB68dc224b250f9588b3DB540D87A66b7a
-    > 0x954e4BF2C68F13D97C45db0e02645D145dB6911f
-    > 0x45F8B547A7f16730c0C8961A21b56c31d84DdB49
+    > EQzeFSroGjB4xodbMYP1qydXeWYgypGSJe
+    > EWmMyKETQCsTYEC3W51dZ3bpUWvn3XtrwG
+    > EPXt4N4aPgV4BEKLtYJgz2NdiAHfa7c2ao
     >
     
     Do you want to use fixed validators? (default = no)
@@ -191,12 +191,12 @@ The bellow example explains how to deploy 3 nodes manually.
     
     Input params to init staking SC:
     - What is the address of candidates owner? (expected 3 address)
-    > 0x560089aB68dc224b250f9588b3DB540D87A66b7a
-    > 0x954e4BF2C68F13D97C45db0e02645D145dB6911f
-    > 0x45F8B547A7f16730c0C8961A21b56c31d84DdB49
+    > EQzeFSroGjB4xodbMYP1qydXeWYgypGSJe
+    > EWmMyKETQCsTYEC3W51dZ3bpUWvn3XtrwG
+    > EPXt4N4aPgV4BEKLtYJgz2NdiAHfa7c2ao
     >
     - What is the admin address of staking SC?
-    > 0x94F5B16552DCEaCbAdABA146D6e3235f4A8617a8
+    > EWjXq29urRYfhDfV35mnVaYVNB4GfN9o83
     - How many blocks for epoch period? (default = 1024)
     > 40
     - What is the max size of validators? (max number of candidates to be selected as validators for producing blocks)
@@ -207,7 +207,7 @@ The bellow example explains how to deploy 3 nodes manually.
     > 1
     
     What is the address of staking smart contract? (avoid special address from 0x0000000000000000000000000000000000000001 to 0x0000000000000000000000000000000000000008)
-    > 0x2D5Bd25EfA0aB97aaca4E888c5fbCB4866904E46
+    > EMHju71XkmyxKJgaqf1QnzxdwGu627GEnN
     INFO [03-16|13:20:30.546] Persisted trie from memory database      nodes=1 size=150.00B time=13.189µs gcnodes=0 gcsize=0.00B gctime=0s livenodes=1 livesize=0.00B
     INFO [03-16|13:20:30.558] Loaded most recent local header          number=0 hash=9e540f…644118 td=0 age=50y11mo1w
     INFO [03-16|13:20:30.558] Loaded most recent local full block      number=0 hash=9e540f…644118 td=0 age=50y11mo1w

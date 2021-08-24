@@ -413,6 +413,8 @@ func (ec *Client) NonceAt(ctx context.Context, account common.Address, blockNumb
 	return uint64(result), err
 }
 
+//TODO: add an api for enterprise contract (Evrynet)
+
 // Filters
 
 // FilterLogs executes a filter query.

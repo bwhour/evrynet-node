@@ -89,7 +89,7 @@ type PrettyAddresses []Address
 func (a PrettyAddresses) String() string {
 	addressesString := ""
 	for _, addr := range a {
-		addressesString += addr.Hex() + ","
+		addressesString += addr.String() + ","
 	}
 	if len(addressesString) != 0 {
 		return addressesString[:len(addressesString)-1]

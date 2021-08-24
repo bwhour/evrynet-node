@@ -21,9 +21,9 @@ To run these test, please deploy your own account/ contract and extract privatek
 // TestSendNormalTxWithFixedFee
 func TestSendNormalTxWithFixedFee(t *testing.T) {
 	const (
-		normalAddress = "0xBBD9e63B95308358AAfb20d6606701A4b6429f5e"
+		normalAddress = "EaHAtNKwh5NMnVQCR1Tjs4HPypncDwAA8H"
 		senderPK      = "62199ECEC394ED8B6BEB52924B8AF3AE41D1887D624A368A3305ED8894B99DCF"
-		senderAddrStr = "0xc1d38df8d2342c84faab9623b2d021466fb2844c"
+		senderAddrStr = "EapmLgEVZtT1Um8QksnVxnv1dR8sb9wRiW"
 
 		testBal1     = 1000000 //1e6
 		testBal2     = 2000000 //2e6
@@ -31,8 +31,8 @@ func TestSendNormalTxWithFixedFee(t *testing.T) {
 	)
 
 	var (
-		senderAddr    = common.HexToAddress(senderAddrStr)
-		normalAddr    = common.HexToAddress(normalAddress)
+		senderAddr, _ = common.EvryAddressStringToAddressCheck(senderAddrStr)
+		normalAddr, _ = common.EvryAddressStringToAddressCheck(normalAddress)
 		fixedGasPrice = big.NewInt(1000000000)
 	)
 

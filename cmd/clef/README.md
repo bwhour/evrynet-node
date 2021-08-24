@@ -31,7 +31,7 @@ COMMANDS:
    
 GLOBAL OPTIONS:
    --loglevel value        log level to emit to the screen (default: 4)
-   --keystore value        Directory for the keystore (default: "$HOME/.ethereum/keystore")
+   --keystore value        Directory for the keystore (default: "$HOME/.evrynet/keystore")
    --configdir value       Directory for Clef configuration (default: "$HOME/.clef")
    --chainid value         Chain id to use for signing (1=mainnet, 3=ropsten, 4=rinkeby, 5=Goerli) (default: 1)
    --lightkdf              Reduce key-derivation RAM & CPU usage at some expense of KDF strength
@@ -203,8 +203,8 @@ Response
   "id": 0,
   "jsonrpc": "2.0",
   "result": {
-    "address": "0xbea9183f8f4f03d427f6bcea17388bdff1cab133",
-    "url": "keystore:///my/keystore/UTC--2017-08-24T08-40-15.419655028Z--bea9183f8f4f03d427f6bcea17388bdff1cab133"
+    "address": "EaY2SwRM6mMGQUJfTf4fHa4M4yFAZPNpxU",
+    "url": "keystore:///my/keystore/UTC--2017-08-24T08-40-15.419655028Z--EaY2SwRM6mMGQUJfTf4fHa4M4yFAZPNpxU"
   }
 }
 ```
@@ -239,14 +239,14 @@ Response
   "jsonrpc": "2.0",
   "result": [
     {
-      "address": "0xafb2f771f58513609765698f65d3f2f0224a956f",
+      "address": "EZAv8yFdackSTnrym8tsb8RXEaBUZp9Y6D",
       "type": "account",
-      "url": "keystore:///tmp/keystore/UTC--2017-08-24T07-26-47.162109726Z--afb2f771f58513609765698f65d3f2f0224a956f"
+      "url": "keystore:///tmp/keystore/UTC--2017-08-24T07-26-47.162109726Z--EZAv8yFdackSTnrym8tsb8RXEaBUZp9Y6D"
     },
     {
-      "address": "0xbea9183f8f4f03d427f6bcea17388bdff1cab133",
+      "address": "EaY2SwRM6mMGQUJfTf4fHa4M4yFAZPNpxU",
       "type": "account",
-      "url": "keystore:///tmp/keystore/UTC--2017-08-24T08-40-15.419655028Z--bea9183f8f4f03d427f6bcea17388bdff1cab133"
+      "url": "keystore:///tmp/keystore/UTC--2017-08-24T08-40-15.419655028Z--EaY2SwRM6mMGQUJfTf4fHa4M4yFAZPNpxU"
     }
   ]
 }
@@ -260,7 +260,7 @@ Response
 #### Arguments
   2. transaction object:
      - `from` [address]: account to send the transaction from
-     - `to` [address]: receiver account. If omitted or `0x`, will cause contract creation.
+     - `to` [address]: receiver account.
      - `gas` [number]: maximum amount of gas to burn
      - `gasPrice` [number]: gas price
      - `value` [number:optional]: amount of Wei to send with the transaction
@@ -281,12 +281,12 @@ Response
   "method": "account_signTransaction",
   "params": [
     {
-      "from": "0x1923f626bb8dc025849e00f99c25fe2b2f7fb0db",
+      "from": "EKSqU2jknpuDVtzqzgyCrQrTwAA4e2VFcg",
       "gas": "0x55555",
       "gasPrice": "0x1234",
       "input": "0xabcd",
       "nonce": "0x0",
-      "to": "0x07a565b7ed7d7a678680a4c162885bedbb695fe0",
+      "to": "EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT",
       "value": "0x1234"
     }
   ]
@@ -314,11 +314,11 @@ Response
   "method": "account_signTransaction",
   "params": [
     {
-      "from": "0x694267f14675d7e1b9494fd8d72fefe1755710fa",
+      "from": "ESkTzhS4rvGEaMdRoHjUs2Gekyvcx8286J",
       "gas": "0x333",
       "gasPrice": "0x1",
       "nonce": "0x0",
-      "to": "0x07a565b7ed7d7a678680a4c162885bedbb695fe0",
+      "to": "EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT",
       "value": "0x0",
       "data": "0x4401a6e40000000000000000000000000000000000000000000000000000000000000012"
     },
@@ -338,7 +338,7 @@ Response
       "nonce": "0x0",
       "gasPrice": "0x1",
       "gas": "0x333",
-      "to": "0x07a565b7ed7d7a678680a4c162885bedbb695fe0",
+      "to": "EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT",
       "value": "0x0",
       "input": "0x4401a6e40000000000000000000000000000000000000000000000000000000000000012",
       "v": "0x26",
@@ -352,9 +352,9 @@ Response
 
 Bash example:
 ```bash
-#curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"account_signTransaction","params":[{"from":"0x694267f14675d7e1b9494fd8d72fefe1755710fa","gas":"0x333","gasPrice":"0x1","nonce":"0x0","to":"0x07a565b7ed7d7a678680a4c162885bedbb695fe0", "value":"0x0", "data":"0x4401a6e40000000000000000000000000000000000000000000000000000000000000012"},"safeSend(address)"],"id":67}' http://localhost:8550/
+#curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"account_signTransaction","params":[{"from":"ESkTzhS4rvGEaMdRoHjUs2Gekyvcx8286J","gas":"0x333","gasPrice":"0x1","nonce":"0x0","to":"EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT", "value":"0x0", "data":"0x4401a6e40000000000000000000000000000000000000000000000000000000000000012"},"safeSend(address)"],"id":67}' http://localhost:8550/
 
-{"jsonrpc":"2.0","id":67,"result":{"raw":"0xf88380018203339407a565b7ed7d7a678680a4c162885bedbb695fe080a44401a6e4000000000000000000000000000000000000000000000000000000000000001226a0223a7c9bcf5531c99be5ea7082183816eb20cfe0bbc322e97cc5c7f71ab8b20ea02aadee6b34b45bb15bc42d9c09de4a6754e7000908da72d48cc7704971491663","tx":{"nonce":"0x0","gasPrice":"0x1","gas":"0x333","to":"0x07a565b7ed7d7a678680a4c162885bedbb695fe0","value":"0x0","input":"0x4401a6e40000000000000000000000000000000000000000000000000000000000000012","v":"0x26","r":"0x223a7c9bcf5531c99be5ea7082183816eb20cfe0bbc322e97cc5c7f71ab8b20e","s":"0x2aadee6b34b45bb15bc42d9c09de4a6754e7000908da72d48cc7704971491663","hash":"0xeba2df809e7a612a0a0d444ccfa5c839624bdc00dd29e3340d46df3870f8a30e"}}}
+{"jsonrpc":"2.0","id":67,"result":{"raw":"0xf88380018203339407a565b7ed7d7a678680a4c162885bedbb695fe080a44401a6e4000000000000000000000000000000000000000000000000000000000000001226a0223a7c9bcf5531c99be5ea7082183816eb20cfe0bbc322e97cc5c7f71ab8b20ea02aadee6b34b45bb15bc42d9c09de4a6754e7000908da72d48cc7704971491663","tx":{"nonce":"0x0","gasPrice":"0x1","gas":"0x333","to":"EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT","value":"0x0","input":"0x4401a6e40000000000000000000000000000000000000000000000000000000000000012","v":"0x26","r":"0x223a7c9bcf5531c99be5ea7082183816eb20cfe0bbc322e97cc5c7f71ab8b20e","s":"0x2aadee6b34b45bb15bc42d9c09de4a6754e7000908da72d48cc7704971491663","hash":"0xeba2df809e7a612a0a0d444ccfa5c839624bdc00dd29e3340d46df3870f8a30e"}}}
 ```
 
 ### account_signData
@@ -381,7 +381,7 @@ Bash example:
   "method": "account_signData",
   "params": [
     "data/plain",
-    "0x1923f626bb8dc025849e00f99c25fe2b2f7fb0db",
+    "EKSqU2jknpuDVtzqzgyCrQrTwAA4e2VFcg",
     "0xaabbccdd"
   ]
 }
@@ -415,7 +415,7 @@ Response
   "jsonrpc": "2.0",
   "method": "account_signTypedData",
   "params": [
-    "0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826",
+    "Ebricr1hUkgTx8n4a3zNQBrbRnmzVHdaGf",
     {
       "types": {
         "EIP712Domain": [
@@ -466,16 +466,16 @@ Response
         "name": "Ether Mail",
         "version": "1",
         "chainId": 1,
-        "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        "verifyingContract": "EbpngUGwQ6fR3T7XdP4NbEoPg3ugbofgeN"
       },
       "message": {
         "from": {
           "name": "Cow",
-          "wallet": "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+          "wallet": "Ebricr1hUkgTx8n4a3zNQBrbRnmzVHdaGf"
         },
         "to": {
           "name": "Bob",
-          "wallet": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+          "wallet": "EaGYkPzKV5xxTMa4E5yDdEKGmMHtQVHX5f"
         },
         "contents": "Hello, Bob!"
       }
@@ -525,7 +525,7 @@ Response
 {
   "id": 4,
   "jsonrpc": "2.0",
-  "result": "0x1923f626bb8dc025849e00f99c25fe2b2f7fb0db"
+  "result": "EKSqU2jknpuDVtzqzgyCrQrTwAA4e2VFcg"
 }
 ```
 
@@ -552,7 +552,7 @@ Response
   "method": "account_import",
   "params": [
     {
-      "address": "c7412fc59930fd90099c917a50e5f11d0934b2f5",
+      "address": "EbKU419qEiFKf7BT7ikEYgosCHaKAzxoKe",
       "crypto": {
         "cipher": "aes-128-ctr",
         "cipherparams": {
@@ -582,9 +582,9 @@ Response
   "id": 6,
   "jsonrpc": "2.0",
   "result": {
-    "address": "0xc7412fc59930fd90099c917a50e5f11d0934b2f5",
+    "address": "EbKU419qEiFKf7BT7ikEYgosCHaKAzxoKe",
     "type": "account",
-    "url": "keystore:///tmp/keystore/UTC--2017-08-24T11-00-42.032024108Z--c7412fc59930fd90099c917a50e5f11d0934b2f5"
+    "url": "keystore:///tmp/keystore/UTC--2017-08-24T11-00-42.032024108Z--EbKU419qEiFKf7BT7ikEYgosCHaKAzxoKe"
   }
 }
 ```
@@ -609,7 +609,7 @@ Response
   "jsonrpc": "2.0",
   "method": "account_export",
   "params": [
-    "0xc7412fc59930fd90099c917a50e5f11d0934b2f5"
+    "EbKU419qEiFKf7BT7ikEYgosCHaKAzxoKe"
   ]
 }
 ```
@@ -620,7 +620,7 @@ Response
   "id": 5,
   "jsonrpc": "2.0",
   "result": {
-    "address": "c7412fc59930fd90099c917a50e5f11d0934b2f5",
+    "address": "EbKU419qEiFKf7BT7ikEYgosCHaKAzxoKe",
     "crypto": {
       "cipher": "aes-128-ctr",
       "cipherparams": {
@@ -671,7 +671,7 @@ Invoked when there's a transaction for approval.
 Here's a method invocation:
 ```bash
 
-curl -i -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"account_signTransaction","params":[{"from":"0x694267f14675d7e1b9494fd8d72fefe1755710fa","gas":"0x333","gasPrice":"0x1","nonce":"0x0","to":"0x07a565b7ed7d7a678680a4c162885bedbb695fe0", "value":"0x0", "data":"0x4401a6e40000000000000000000000000000000000000000000000000000000000000012"},"safeSend(address)"],"id":67}' http://localhost:8550/
+curl -i -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"account_signTransaction","params":[{"from":"ESkTzhS4rvGEaMdRoHjUs2Gekyvcx8286J","gas":"0x333","gasPrice":"0x1","nonce":"0x0","to":"EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT", "value":"0x0", "data":"0x4401a6e40000000000000000000000000000000000000000000000000000000000000012"},"safeSend(address)"],"id":67}' http://localhost:8550/
 ```
 Results in the following invocation on the UI:
 ```json
@@ -683,8 +683,8 @@ Results in the following invocation on the UI:
   "params": [
     {
       "transaction": {
-        "from": "0x0x694267f14675d7e1b9494fd8d72fefe1755710fa",
-        "to": "0x0x07a565b7ed7d7a678680a4c162885bedbb695fe0",
+        "from": "ESkTzhS4rvGEaMdRoHjUs2Gekyvcx8286J",
+        "to": "EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT",
         "gas": "0x333",
         "gasPrice": "0x1",
         "value": "0x0",
@@ -716,7 +716,7 @@ Results in the following invocation on the UI:
 The same method invocation, but with invalid data:
 ```bash
 
-curl -i -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"account_signTransaction","params":[{"from":"0x694267f14675d7e1b9494fd8d72fefe1755710fa","gas":"0x333","gasPrice":"0x1","nonce":"0x0","to":"0x07a565b7ed7d7a678680a4c162885bedbb695fe0", "value":"0x0", "data":"0x4401a6e40000000000000002000000000000000000000000000000000000000000000012"},"safeSend(address)"],"id":67}' http://localhost:8550/
+curl -i -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"account_signTransaction","params":[{"from":"ESkTzhS4rvGEaMdRoHjUs2Gekyvcx8286J","gas":"0x333","gasPrice":"0x1","nonce":"0x0","to":"EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT", "value":"0x0", "data":"0x4401a6e40000000000000002000000000000000000000000000000000000000000000012"},"safeSend(address)"],"id":67}' http://localhost:8550/
 ```
 
 ```json
@@ -728,8 +728,8 @@ curl -i -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","me
   "params": [
     {
       "transaction": {
-        "from": "0x0x694267f14675d7e1b9494fd8d72fefe1755710fa",
-        "to": "0x0x07a565b7ed7d7a678680a4c162885bedbb695fe0",
+        "from": "ESkTzhS4rvGEaMdRoHjUs2Gekyvcx8286J",
+        "to": "EHrLMwDK5JFVmtpLktAu43YEDJfzcQSCgT",
         "gas": "0x333",
         "gasPrice": "0x1",
         "value": "0x0",
@@ -813,13 +813,13 @@ Invoked when a request for account listing has been made.
       "accounts": [
         {
           "type": "Account",
-          "url": "keystore:///home/bazonk/.ethereum/keystore/UTC--2017-11-20T14-44-54.089682944Z--123409812340981234098123409812deadbeef42",
-          "address": "0x123409812340981234098123409812deadbeef42"
+          "url": "keystore:///home/bazonk/.evrynet/keystore/UTC--2017-11-20T14-44-54.089682944Z--EJp9ze5YyPLib5ApnwkqJ5JjmTgmu4D3oV",
+          "address": "EJp9ze5YyPLib5ApnwkqJ5JjmTgmu4D3oV"
         },
         {
           "type": "Account",
-          "url": "keystore:///home/bazonk/.ethereum/keystore/UTC--2017-11-23T21-59-03.199240693Z--cafebabedeadbeef34098123409812deadbeef42",
-          "address": "0xcafebabedeadbeef34098123409812deadbeef42"
+          "url": "keystore:///home/bazonk/.evrynet/keystore/UTC--2017-11-23T21-59-03.199240693Z--EbfF9FM2Nrd8Lntv4VHnGx3qgroQQV3rHN",
+          "address": "EbfF9FM2Nrd8Lntv4VHnGx3qgroQQV3rHN"
         }
       ],
       "meta": {
@@ -845,7 +845,7 @@ Invoked when a request for account listing has been made.
   "method": "ui_approveSignData",
   "params": [
     {
-      "address": "0x123409812340981234098123409812deadbeef42",
+      "address": "EJp9ze5YyPLib5ApnwkqJ5JjmTgmu4D3oV",
       "raw_data": "0x01020304",
       "message": "\u0019Evrynet Signed Message:\n4\u0001\u0002\u0003\u0004",
       "hash": "0x7e3a4e7a9d1744bc5c675c25e1234ca8ed9162bd17f78b9085e48047c15ac310",
@@ -941,7 +941,7 @@ A UI should conform to the following rules.
 * A UI MUST NOT load any external resources that were not embedded/part of the UI package.
   * For example, not load icons, stylesheets from the internet
   * Not load files from the filesystem, unless they reside in the same local directory (e.g. config files)
-* A Graphical UI MUST show the blocky-identicon for ethereum addresses.
+* A Graphical UI MUST show the blocky-identicon for Evrynet addresses.
 * A UI MUST warn display approproate warning if the destination-account is formatted with invalid checksum.
 * A UI MUST NOT open any ports or services
   * The signer opens the public port

@@ -5,7 +5,7 @@ until [[ $version ]]; do read -rp "- Tag Version/Branch Name you want to build: 
 env=
 until [[ $env ]]; do read -rp "- Environment of Image: " env; done
 buildExplorer=
-until [[ $buildExplorer ]]; do read -rp "- Do you want to build Explorer Image? " buildExplorer; done
+until [[ $buildExplorer ]]; do read -rp "- Do you want to build Explorer Image? (y/n) " buildExplorer; done
 
 # Replace / with -
 newVersion=${version//\//-}
@@ -36,38 +36,38 @@ fi
 
 
 echo "--- Building builder container for version $version"
-#yes | sudo version="$BUILDER_TAG_ENV" docker-compose -f "$BASEDIR"/docker-compose.yml up -d --force-recreate --build gev-builder
-yes | sudo docker build -f ./deploy/testnet/builder/Dockerfile -t "$BUILDER_TAG_ENV" ./deploy/testnet/builder/
+yes | sudo docker build -f ./deploy/testnet/builder/Dockerfile -t "$BUILDER_TAG_ENV" "$BASEDIR"/builder/
 
 echo "--- Creating temporary docker container from $BUILDER_TAG_ENV to get bin files"
 TempBuilderContainer=$(sudo docker create "$BUILDER_TAG_ENV")
 
-echo "--- Copy gev, bootnode from $BUILDER_TAG_ENV to ./builder/bin/"
+echo "--- Copy gev, bootnode from $BUILDER_TAG_ENV to ./nodes/bin/, ./bootnode/bin/"
 rm -rf "$BASEDIR"/nodes/bin/gev
 rm -rf "$BASEDIR"/bootnode/bin/bootnode
+mkdir -p "$BASEDIR"/nodes/bin/ "$BASEDIR"/bootnode/bin/
 sudo docker cp "$TempBuilderContainer":/evrynet/gev "$BASEDIR"/nodes/bin/
 sudo docker cp "$TempBuilderContainer":/evrynet/bootnode "$BASEDIR"/bootnode/bin/
 sudo docker rm -v "$TempBuilderContainer"
 
 echo "--- Building bootnode image $BOOTNODE_TAG_ENV "
-yes | sudo docker build -f ./deploy/testnet/bootnode/Dockerfile -t "$BOOTNODE_TAG_ENV" ./deploy/testnet/bootnode/
+yes | sudo docker build -f "$BASEDIR"/bootnode/Dockerfile -t "$BOOTNODE_TAG_ENV" "$BASEDIR"/bootnode/
 
 echo "--- Building node image $NODE_TAG_ENV "
-yes | sudo docker build -f ./deploy/testnet/nodes/Dockerfile -t "$NODE_TAG_ENV" ./deploy/testnet/nodes/
+yes | sudo docker build -f "$BASEDIR"/nodes/Dockerfile -t "$NODE_TAG_ENV" "$BASEDIR"/nodes/
 
 rm -rf "$BASEDIR"/builder/project
 
 
 if [[ "$buildExplorer" == "y" ]]; then
   rm -rf "$BASEDIR"/explorer/web
-  echo "--- Cloning explorer from master branch ..."
+  echo "--- Cloning explorer from develop branch ..."
   git clone git@github.com:Evrynetlabs/explorer.git "$BASEDIR"/explorer/web
 
-  sudo docker rmi -f img_explorer
+  sudo docker rmi -f $EXPLORER_TAG_ENV
   sudo docker rm -f gev-explorer
 
   echo "--- Building explorer image $EXPLORER_TAG_ENV "
-  yes | sudo docker build -f ./deploy/testnet/explorer/Dockerfile -t "$EXPLORER_TAG_ENV" ./deploy/testnet/explorer/
+  yes | sudo docker build -f "$BASEDIR"/explorer/Dockerfile -t "$EXPLORER_TAG_ENV" "$BASEDIR"/explorer
 
   rm -rf "$BASEDIR"/explorer/web
 fi

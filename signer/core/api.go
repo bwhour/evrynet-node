@@ -24,7 +24,6 @@ import (
 	"math/big"
 	"os"
 	"reflect"
-	"strings"
 
 	"github.com/Evrynetlabs/evrynet-node/accounts"
 	"github.com/Evrynetlabs/evrynet-node/accounts/keystore"
@@ -37,6 +36,7 @@ import (
 	"github.com/Evrynetlabs/evrynet-node/log"
 	"github.com/Evrynetlabs/evrynet-node/rlp"
 	"github.com/Evrynetlabs/evrynet-node/signer/storage"
+
 )
 
 const (
@@ -360,7 +360,8 @@ func (api *SignerAPI) startUSBListener() {
 					if err != nil {
 						log.Warn("account derivation failed", "error", err)
 					} else {
-						log.Info("derived account", "address", acc.Address)
+						log.Info("derived account", "address",
+							common.AddressToEvryAddressString(acc.Address))
 					}
 					nextPath[len(nextPath)-1]++
 				}
@@ -424,7 +425,7 @@ func (api *SignerAPI) New(ctx context.Context) (common.Address, error) {
 		} else {
 			// No error
 			acc, err := be[0].(*keystore.KeyStore).NewAccount(resp.Text)
-			log.Info("Your new key was generated", "address", acc.Address)
+			log.Info("Your new key was generated", "address", common.AddressToEvryAddressString(acc.Address))
 			log.Warn("Please backup your key file!", "path", acc.URL.Path)
 			log.Warn("Please remember your password!")
 			return acc.Address, err
@@ -481,7 +482,7 @@ func logDiff(original *SignTxRequest, new *SignTxResponse) bool {
 }
 
 func (api *SignerAPI) lookupPassword(address common.Address) string {
-	return api.credentials.Get(strings.ToLower(address.String()))
+	return api.credentials.Get(common.AddressToEvryAddressString(address))
 }
 func (api *SignerAPI) lookupOrQueryPassword(address common.Address, title, prompt string) (string, error) {
 	if pw := api.lookupPassword(address); pw != "" {
@@ -542,7 +543,7 @@ func (api *SignerAPI) SignTransaction(ctx context.Context, args SendTxArgs, meth
 	var unsignedTx = result.Transaction.toTransaction()
 	// Get the password for the transaction
 	pw, err := api.lookupOrQueryPassword(acc.Address, "Account password",
-		fmt.Sprintf("Please enter the password for account %s", acc.Address.String()))
+		fmt.Sprintf("Please enter the password for account %s", common.AddressToEvryAddressString(acc.Address)))
 	if err != nil {
 		return nil, err
 	}
@@ -577,7 +578,8 @@ func (api *SignerAPI) ProviderSignTransaction(ctx context.Context, tx *types.Tra
 	}
 	// Get the password for the transaction
 	pw, err := api.lookupOrQueryPassword(acc.Address, "Providers account password",
-		fmt.Sprintf("Please enter the password for provider account %s", acc.Address.String()))
+		fmt.Sprintf("Please enter the password for provider account %s",
+			common.AddressToEvryAddressString(acc.Address)))
 	if err != nil {
 		return nil, err
 	}
